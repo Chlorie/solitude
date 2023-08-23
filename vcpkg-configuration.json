@@ -1,7 +1,17 @@
 {
-  "default-registry": {
-    "kind": "git",
-    "baseline": "57fee154cc4068542740b4b5775343d9fd83413e",
-    "repository": "https://github.com/microsoft/vcpkg"
-  }
+    "default-registry": {
+        "kind": "git",
+        "baseline": "77ed341f9fa24185a1540b2bd4f32e45c9f7c4cb",
+        "repository": "https://github.com/microsoft/vcpkg"
+    },
+    "registries": [
+        {
+            "kind": "git",
+            "baseline": "b2e426d5b923d11008c4daf97ad25deeb24eef67",
+            "repository": "https://github.com/Chlorie/vcpkg-ports",
+            "packages": [
+                "clu"
+            ]
+        }
+    ]
 }

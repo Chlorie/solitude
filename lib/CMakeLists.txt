@@ -12,15 +12,19 @@ endfunction ()
 
 target_add_sources(solitude "include/solitude/"
     # Header files here
+    "board.h"
     "export.h"
+    "utils.h"
 )
 
 target_add_sources(solitude "src/"
     # Source files here (relative to ./src/)
-    "dummy.cpp"
+    "board.cpp"
+    "utils.cpp"
 )
 
-# find_package(fmt CONFIG REQUIRED)
+find_package(clu CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 target_set_options(solitude PRIVATE)
 target_set_warnings(solitude PRIVATE)
@@ -39,7 +43,8 @@ PUBLIC
 )
 target_link_libraries(solitude
 PUBLIC
-    # fmt::fmt
+    clu::clu    
+    fmt::fmt
 )
 
 include(CMakePackageConfigHelpers)
