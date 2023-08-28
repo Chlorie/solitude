@@ -14,13 +14,20 @@ target_add_sources(solitude "include/solitude/"
     # Header files here
     "board.h"
     "export.h"
+    "generator.h"
+    "strategies.h"
     "utils.h"
+    "strategies/subsets.h"
 )
 
 target_add_sources(solitude "src/"
     # Source files here (relative to ./src/)
     "board.cpp"
+    "generator.cpp"
     "utils.cpp"
+    "strategies/common.h"
+    "strategies/common.cpp"
+    "strategies/subsets.cpp"
 )
 
 find_package(clu CONFIG REQUIRED)

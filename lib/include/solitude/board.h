@@ -7,6 +7,8 @@
 
 #include "export.h"
 
+SOLITUDE_SUPPRESS_EXPORT_WARNING
+
 namespace sltd
 {
     inline constexpr int box_width = 3;
@@ -22,21 +24,48 @@ namespace sltd
     struct SOLITUDE_API Board final
     {
         CandidateMask cells[cell_count]{};
+        PatternMask filled;
 
-        constexpr CandidateMask& at(const int i, const int j) noexcept { return cells[i * board_size + j]; }
-        constexpr CandidateMask at(const int i, const int j) const noexcept { return cells[i * board_size + j]; }
+        auto filled_at(const int r, const int c) noexcept { return filled[r * board_size + c]; }
+        bool filled_at(const int r, const int c) const noexcept { return filled[r * board_size + c]; }
+        auto& at(const int r, const int c) noexcept { return cells[r * board_size + c]; }
+        auto at(const int r, const int c) const noexcept { return cells[r * board_size + c]; }
 
-        PatternMask pattern_of(int number) const noexcept; // Number is 0-based
-        void apply_pattern(int number, PatternMask mask) noexcept; // Number is 0-based
+        void set_number_at(const int num, const int idx) noexcept
+        {
+            cells[idx] = 1 << num;
+            filled.set(idx);
+        }
+        void set_number_at(const int num, const int r, const int c) noexcept { set_number_at(num, r * board_size + c); }
+        void set_number_at(int num, PatternMask mask) noexcept;
+
+        void set_unknown_at(const int idx) noexcept
+        {
+            cells[idx] = full_mask;
+            filled.set(idx, false);
+        }
+        void set_unknown_at(const int r, const int c) noexcept { set_unknown_at(r * board_size + c); }
+
+        PatternMask pattern_of(int num) const noexcept;
 
         static Board empty_board() noexcept;
         static Board random_filled_board() noexcept;
         static Board from_repr(std::string_view str);
+        static Board from_full_repr(std::string_view str);
+
+        bool reduce_candidates_from_naked_single(const int idx) noexcept
+        {
+            return reduce_candidates_from_naked_single(idx / board_size, idx % board_size);
+        }
+        bool reduce_candidates_from_naked_single(int r, int c) noexcept;
+        bool reduce_candidates() noexcept;
 
         int brute_force_solve(int max_solutions = 1'000, bool randomized = false);
-        int brute_force_solve2(int max_solutions = 1'000, bool randomized = false);
 
-        void print() const;
+        void print(bool display_candidates_with_braille_dots = false) const;
         std::string repr() const;
+        std::string full_repr() const;
     };
 } // namespace sltd
+
+SOLITUDE_RESTORE_EXPORT_WARNING

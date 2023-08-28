@@ -1,9 +1,6 @@
 #include "solitude/board.h"
 
 #include <bit>
-#include <array>
-#include <stack>
-#include <vector>
 #include <algorithm>
 #include <fmt/format.h>
 #include <clu/static_vector.h>
@@ -26,137 +23,8 @@ namespace sltd
                 return 1 << (ch - '1');
             else if (ch >= 'A' && ch <= 'G')
                 return 1 << (ch - 'A' + 9);
-            throw std::runtime_error("Unknown character representation");
+            throw std::runtime_error(fmt::format("Unknown character {:?}", ch));
         }
-
-        constexpr CandidateMask get_cell_candidates(const Board& current, const int idx) noexcept
-        {
-            const int r = idx / board_size, c = idx % board_size;
-            CandidateMask cell = full_mask;
-            for (int i = 0; i < board_size; i++)
-            {
-                if (i != r)
-                {
-                    if (const CandidateMask other = current.at(i, c); std::has_single_bit(other))
-                        cell &= ~other;
-                }
-                if (i != c)
-                {
-                    if (const CandidateMask other = current.at(r, i); std::has_single_bit(other))
-                        cell &= ~other;
-                }
-            }
-            const int br = r / box_height * box_height;
-            const int bc = c / box_width * box_width;
-            for (int i = br; i < r; i++)
-            {
-                if (i == r)
-                    continue;
-                for (int j = bc; j < bc + box_width; j++)
-                {
-                    if (j == c)
-                        continue;
-                    if (const CandidateMask other = current.at(i, j); std::has_single_bit(other))
-                        cell &= ~other;
-                }
-            }
-            return cell;
-        }
-
-        using HorizontalBandMask = std::bitset<cell_count / box_height>;
-        using ColumnMask = std::bitset<board_size>;
-
-        struct BandPattern
-        {
-            HorizontalBandMask band;
-            ColumnMask columns;
-        };
-
-        auto generate_band_patterns()
-        {
-            static constexpr int column_mask_count = []
-            {
-                int res = 1;
-                for (int i = 0; i < box_height; i++)
-                    res *= box_width;
-                return res;
-            }();
-
-            static constexpr auto to_column_mask = [](int idx)
-            {
-                ColumnMask mask;
-                std::array<int, box_height> column_indices;
-                for (int i = 0; i < box_height; i++)
-                {
-                    column_indices[i] = idx % box_width + i * box_width;
-                    idx /= box_width;
-                }
-                for (const int i : column_indices)
-                    mask.set(i);
-                return std::pair{mask, column_indices};
-            };
-
-            std::vector<BandPattern> res;
-            for (int i = 0; i < column_mask_count; i++)
-            {
-                auto [column_mask, indices] = to_column_mask(i);
-                std::array<int, box_height> perm;
-                for (int j = 0; j < box_height; j++)
-                    perm[j] = j;
-                do
-                {
-                    HorizontalBandMask band_mask;
-                    for (int j = 0; j < box_height; j++)
-                        band_mask.set(j * board_size + indices[j]);
-                    res.push_back({band_mask, column_mask});
-                } while (std::ranges::next_permutation(indices).found);
-            }
-            return res;
-        }
-
-        class PatternGenerator
-        {
-        public:
-            PatternGenerator(): bands_(generate_band_patterns())
-            {
-                while (find_next_index())
-                    add_current_pattern();
-            }
-
-            auto get_result() && { return std::move(result_); }
-
-        private:
-            std::vector<PatternMask> result_;
-            std::vector<BandPattern> bands_;
-            int indices_[box_width]{-1};
-            int band_idx_ = 0;
-
-            bool find_next_index()
-            {
-                ColumnMask filled_columns;
-                for (int i = 0; i < band_idx_; i++)
-                    filled_columns |= bands_[indices_[i]].columns;
-                for (int& i = ++indices_[band_idx_]; i < bands_.size(); i++)
-                    if ((bands_[i].columns & filled_columns).none())
-                    {
-                        if (band_idx_ != box_width - 1)
-                        {
-                            indices_[++band_idx_] = -1;
-                            find_next_index();
-                        }
-                        return true;
-                    }
-                return band_idx_-- == 0 ? false : find_next_index();
-            }
-
-            void add_current_pattern()
-            {
-                PatternMask mask;
-                for (int i = 0; i < box_width; i++)
-                    mask |= PatternMask(bands_[indices_[i]].band.to_ullong()) << (i * cell_count / box_height);
-                result_.push_back(mask);
-            }
-        };
 
         class BruteForceSolver
         {
@@ -168,7 +36,9 @@ namespace sltd
 
             std::pair<Board, int> solve()
             {
-                solve_recurse(solution_, {});
+                if (!solution_.reduce_candidates())
+                    return {solution_, 0};
+                solve_recurse(solution_);
                 return {solution_, solution_count_};
             }
 
@@ -178,11 +48,11 @@ namespace sltd
             int solution_count_ = 0;
             Board solution_;
 
-            void solve_recurse(Board state, PatternMask filled)
+            void solve_recurse(Board state)
             {
-                if (!exhaust_naked_singles(state, filled))
+                if (!exhaust_naked_singles(state))
                     return;
-                if (filled.all()) // New solution
+                if (state.filled.all()) // New solution
                 {
                     solution_count_++;
                     solution_ = state;
@@ -192,7 +62,7 @@ namespace sltd
                 int min_candidates = board_size + 1, min_idx = 0;
                 for (int i = 0; i < cell_count; i++)
                 {
-                    if (filled[i])
+                    if (state.filled[i])
                         continue;
                     if (const auto count = std::popcount(state.cells[i]); count < min_candidates)
                     {
@@ -208,66 +78,85 @@ namespace sltd
                 {
                     const auto bit = randomized_ ? get_random_bit(candidates) : get_rightmost_set_bit(candidates);
                     state.cells[min_idx] = bit;
-                    solve_recurse(state, filled);
+                    solve_recurse(state);
                     if (solution_count_ >= max_solutions_)
                         return;
                     candidates &= ~bit;
                 }
             }
 
-            static bool exhaust_naked_singles(Board& state, PatternMask& filled)
+            static bool exhaust_naked_singles(Board& state)
             {
                 while (true)
                 {
                     bool exhausted = true;
                     for (int i = 0; i < cell_count; i++)
-                        if (!filled[i] && std::has_single_bit(state.cells[i]))
-                        {
-                            exhausted = false;
-                            filled.set(i);
-                            const int r = i / board_size, c = i % board_size;
-                            for (int j = 0; j < board_size; j++)
-                            {
-                                if (j != r && !filled[j * board_size + c]) // Same column
-                                    if ((state.at(j, c) &= ~state.cells[i]) == 0) // Contradiction
-                                        return false;
-                                if (j != c && !filled[r * board_size + j]) // Same row
-                                    if ((state.at(r, j) &= ~state.cells[i]) == 0) // Contradiction
-                                        return false;
-                            }
-                            const int br = r / 3 * 3, bc = c / 3 * 3;
-                            for (int j = br; j < br + 3; j++)
-                            {
-                                if (j == r)
-                                    continue;
-                                for (int k = bc; k < bc + 3; k++)
-                                    if (k != c && !filled[j * board_size + k]) // Same box
-                                        if ((state.at(j, k) &= ~state.cells[i]) == 0) // Contradiction
-                                            return false;
-                            }
-                        }
+                    {
+                        if (state.filled[i] || !std::has_single_bit(state.cells[i]))
+                            continue;
+                        exhausted = false;
+                        state.filled.set(i);
+                        if (!state.reduce_candidates_from_naked_single(i))
+                            return false;
+                    }
                     if (exhausted)
                         return true;
                 }
             }
         };
+
+        constexpr auto candidate_to_braille_position()
+        {
+            constexpr std::array<std::uint8_t, 8> values{1, 2, 4, 64, 8, 16, 32, 128}; // column-major
+            std::array<std::pair<bool, std::uint8_t>, board_size> res{};
+            for (int i = 0; i < box_height; i++)
+                for (int j = 0; j < box_width; j++)
+                    res[i * box_width + j] = {j >= 2, values[j % 2 * 4 + i]};
+            return res;
+        }
+
+        constexpr auto candidate_braille_positions = candidate_to_braille_position();
+
+        std::string braille_dots(const std::uint8_t value)
+        {
+            const std::uint32_t cp = 0x2800 + value;
+            const char bytes[4]{ // Convert codepoint to 3 UTF-8 bytes
+                static_cast<char>(((cp >> 12) & 0xf) | 0xe0), //
+                static_cast<char>(((cp >> 6) & 0x3f) | 0x80),
+                static_cast<char>((cp & 0x3f) | 0x80) //
+            };
+            return bytes;
+        }
+
+        std::string candidates_to_braille_patterns(const CandidateMask candidates)
+        {
+            std::pair<std::uint8_t, std::uint8_t> values{};
+            for (int i = 0; i < board_size; i++)
+                if (candidates & (1 << i))
+                {
+                    const auto [second, added] = candidate_braille_positions[i];
+                    (second ? values.second : values.first) += added;
+                }
+            return braille_dots(values.first) + braille_dots(values.second);
+        }
     } // namespace
 
-    PatternMask Board::pattern_of(const int number) const noexcept
+    void Board::set_number_at(const int num, const PatternMask mask) noexcept
     {
-        PatternMask res;
-        const CandidateMask bit = 1 << number;
-        for (int i = 0; i < cell_count; i++)
-            res.set(i, (cells[i] & bit) != 0);
-        return res;
-    }
-
-    void Board::apply_pattern(const int number, const PatternMask mask) noexcept
-    {
-        const CandidateMask bit = 1 << number;
+        const CandidateMask bit = 1 << num;
         for (int i = 0; i < cell_count; i++)
             if (mask.test(i))
                 cells[i] = bit;
+        filled |= mask;
+    }
+
+    PatternMask Board::pattern_of(const int num) const noexcept
+    {
+        PatternMask res;
+        const CandidateMask bit = 1 << num;
+        for (int i = 0; i < cell_count; i++)
+            res.set(i, (cells[i] & bit) != 0);
+        return res;
     }
 
     Board Board::empty_board() noexcept
@@ -280,7 +169,15 @@ namespace sltd
 
     Board Board::random_filled_board() noexcept
     {
+        if constexpr (board_size > 9) // Fallback for larger puzzles
+        {
+            auto board = empty_board();
+            board.brute_force_solve(1, true);
+            return board;
+        }
+
         Board board;
+        board.filled.set();
         Board backtrack;
         int cur = 0;
         while (cur < cell_count)
@@ -315,61 +212,89 @@ namespace sltd
         Board board = empty_board();
         for (int i = 0; i < cell_count; i++)
             if (str[i] != '.')
+            {
                 board.cells[i] = from_char_repr(str[i]);
+                board.filled.set(i);
+            }
         return board;
     }
 
-    int Board::brute_force_solve(const int max_solutions, const bool randomized)
+    Board Board::from_full_repr(const std::string_view str)
     {
-        const Board original = *this;
-        Board solution = *this;
-        int solution_count = 0;
-        std::stack<CandidateMask, clu::static_vector<CandidateMask, cell_count>> stack;
-
-        int idx = -1;
-        while (true)
+        Board res;
+        std::size_t si = 0;
+        for (int i = 0; i < cell_count; i++)
         {
-            if (++idx == cell_count)
+            if (si >= str.size())
+                throw std::runtime_error("Too few cells in the string");
+            if (str[si] != '(') // Filled
             {
-                solution = *this;
-                if (++solution_count == max_solutions)
-                    return max_solutions;
-                --idx;
+                res.filled.set(i);
+                res.cells[i] = from_char_repr(str[si]);
             }
             else
             {
-                const CandidateMask candidates = original.cells[idx] & get_cell_candidates(*this, idx);
-                stack.push(candidates);
+                si++;
+                while (si < str.size() && str[si] != ')')
+                {
+                    res.cells[i] |= from_char_repr(str[si]);
+                    si++;
+                }
+                if (si == str.size())
+                    throw std::runtime_error("Parenthesis not closed");
             }
-            // Backtrack to the last point where we still had a choice
-            while (!stack.empty() && stack.top() == 0)
-            {
-                cells[idx] = original.cells[idx];
-                stack.pop();
-                idx--;
-            }
-            // Stack exhausted, no more solutions
-            if (stack.empty())
-            {
-                *this = solution;
-                return solution_count;
-            }
-            // Try a candidate from the last choice and remove it from the stack top
-            auto& choices = stack.top();
-            const CandidateMask selected = randomized ? get_random_bit(choices) : get_rightmost_set_bit(choices);
-            cells[idx] = selected;
-            choices &= ~selected;
+            si++;
         }
+        if (si != str.size())
+            throw std::runtime_error("Too many cells in the string");
+        return res;
     }
 
-    int Board::brute_force_solve2(const int max_solutions, const bool randomized)
+    bool Board::reduce_candidates_from_naked_single(const int r, const int c) noexcept
+    {
+        const auto mask = ~at(r, c);
+        for (int i = 0; i < board_size; i++)
+        {
+            if (i != r && !filled_at(i, c)) // Same column
+                if ((at(i, c) &= mask) == 0) // Contradiction
+                    return false;
+            if (i != c && !filled_at(r, i)) // Same row
+                if ((at(r, i) &= mask) == 0) // Contradiction
+                    return false;
+        }
+        const int br = r / box_height * box_height, bc = c / box_width * box_width;
+        for (int i = br; i < br + box_height; i++)
+        {
+            if (i == r)
+                continue;
+            for (int j = bc; j < bc + box_width; j++)
+                if (j != c && !filled_at(i, j)) // Same box
+                    if ((at(i, j) &= mask) == 0) // Contradiction
+                        return false;
+        }
+        return true;
+    }
+
+    bool Board::reduce_candidates() noexcept
+    {
+        for (int i = 0; i < cell_count; i++)
+        {
+            if (!filled[i])
+                continue;
+            if (!reduce_candidates_from_naked_single(i))
+                return false;
+        }
+        return true;
+    }
+
+    int Board::brute_force_solve(const int max_solutions, const bool randomized)
     {
         const auto [solution, count] = BruteForceSolver(*this, max_solutions, randomized).solve();
         *this = solution;
         return count;
     }
 
-    void Board::print() const
+    void Board::print(const bool display_candidates_with_braille_dots) const
     {
         const auto print_row_sep = []
         {
@@ -385,10 +310,12 @@ namespace sltd
             {
                 if (j % box_width == 0)
                     fmt::print("| ");
-                if (std::has_single_bit(at(i, j)))
+                if (filled_at(i, j))
                     fmt::print("{} ", to_char_repr(at(i, j)));
+                else if (display_candidates_with_braille_dots)
+                    fmt::print("{}", candidates_to_braille_patterns(at(i, j)));
                 else
-                    fmt::print("- ");
+                    fmt::print(". ");
             }
             fmt::println("|");
         }
@@ -399,8 +326,26 @@ namespace sltd
     {
         std::string res(cell_count, '.');
         for (int i = 0; i < cell_count; i++)
-            if (std::has_single_bit(cells[i]))
+            if (filled[i])
                 res[i] = to_char_repr(cells[i]);
+        return res;
+    }
+
+    std::string Board::full_repr() const
+    {
+        std::string res;
+        res.reserve(cell_count);
+        for (int i = 0; i < cell_count; i++)
+            if (filled[i])
+                res.push_back(to_char_repr(cells[i]));
+            else
+            {
+                res.push_back('(');
+                for (int j = 0; j < board_size; j++)
+                    if (const CandidateMask bit = 1 << j; bit & cells[i])
+                        res.push_back(to_char_repr(bit));
+                res.push_back(')');
+            }
         return res;
     }
 } // namespace sltd
