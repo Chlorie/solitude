@@ -53,12 +53,12 @@ namespace sltd
         static Board from_repr(std::string_view str);
         static Board from_full_repr(std::string_view str);
 
-        bool reduce_candidates_from_naked_single(const int idx) noexcept
+        bool eliminate_candidates_from_naked_single(const int idx) noexcept
         {
-            return reduce_candidates_from_naked_single(idx / board_size, idx % board_size);
+            return eliminate_candidates_from_naked_single(idx / board_size, idx % board_size);
         }
-        bool reduce_candidates_from_naked_single(int r, int c) noexcept;
-        bool reduce_candidates() noexcept;
+        bool eliminate_candidates_from_naked_single(int r, int c) noexcept;
+        bool eliminate_candidates() noexcept;
 
         int brute_force_solve(int max_solutions = 1'000, bool randomized = false);
 

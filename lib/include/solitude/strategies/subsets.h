@@ -11,6 +11,8 @@ namespace sltd
 {
     struct SOLITUDE_API NakedSingle
     {
+        static constexpr std::string_view name = "NakedSingle";
+
         int cell_idx = 0;
         CandidateMask candidate = 0;
 
@@ -21,6 +23,8 @@ namespace sltd
 
     struct SOLITUDE_API NakedSubset
     {
+        static constexpr std::string_view name = "NakedSubset";
+
         int house_idx = 0;
         CandidateMask idx_mask = 0; // Cell bitmask in the house
         CandidateMask candidates = 0;
@@ -32,6 +36,8 @@ namespace sltd
 
     struct SOLITUDE_API HiddenSubset
     {
+        static constexpr std::string_view name = "HiddenSubset";
+
         int house_idx = 0;
         CandidateMask idx_mask = 0; // Cell bitmask in the house
         CandidateMask candidates = 0;

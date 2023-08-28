@@ -36,7 +36,7 @@ namespace sltd
 
             std::pair<Board, int> solve()
             {
-                if (!solution_.reduce_candidates())
+                if (!solution_.eliminate_candidates())
                     return {solution_, 0};
                 solve_recurse(solution_);
                 return {solution_, solution_count_};
@@ -96,7 +96,7 @@ namespace sltd
                             continue;
                         exhausted = false;
                         state.filled.set(i);
-                        if (!state.reduce_candidates_from_naked_single(i))
+                        if (!state.eliminate_candidates_from_naked_single(i))
                             return false;
                     }
                     if (exhausted)
@@ -250,7 +250,7 @@ namespace sltd
         return res;
     }
 
-    bool Board::reduce_candidates_from_naked_single(const int r, const int c) noexcept
+    bool Board::eliminate_candidates_from_naked_single(const int r, const int c) noexcept
     {
         const auto mask = ~at(r, c);
         for (int i = 0; i < board_size; i++)
@@ -275,13 +275,13 @@ namespace sltd
         return true;
     }
 
-    bool Board::reduce_candidates() noexcept
+    bool Board::eliminate_candidates() noexcept
     {
         for (int i = 0; i < cell_count; i++)
         {
             if (!filled[i])
                 continue;
-            if (!reduce_candidates_from_naked_single(i))
+            if (!eliminate_candidates_from_naked_single(i))
                 return false;
         }
         return true;

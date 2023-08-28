@@ -177,22 +177,15 @@ namespace sltd
     {
         board.cells[cell_idx] = candidate;
         board.filled.set(cell_idx);
-        board.reduce_candidates_from_naked_single(cell_idx);
+        board.eliminate_candidates_from_naked_single(cell_idx);
     }
 
     std::string NakedSubset::description() const
     {
-        std::string res = fmt::format("Naked {}: in {}, ", tuple_names[std::popcount(idx_mask)], house_name(house_idx));
-        const auto& house = house_indices[house_idx];
-        for (int i = 0; i < board_size; i++)
-            if ((1 << i) & idx_mask)
-                res += fmt::format("{},", cell_name(house[i]));
-        res.back() = '=';
-        for (int i = 0; i < board_size; i++)
-            if ((1 << i) & candidates)
-                res += fmt::format("{},", i + 1);
-        res.pop_back();
-        return res;
+        return fmt::format("Naked {}: in {}, {}={}", //
+            tuple_names[std::popcount(idx_mask)], house_name(house_idx), //
+            describe_cells_in_house(house_idx, idx_mask), //
+            describe_candidates(candidates));
     }
 
     std::optional<NakedSubset> NakedSubset::try_find(const Board& board, const int size)
@@ -221,18 +214,10 @@ namespace sltd
 
     std::string HiddenSubset::description() const
     {
-        std::string res =
-            fmt::format("Hidden {}: in {}, ", tuple_names[std::popcount(idx_mask)], house_name(house_idx));
-        const auto& house = house_indices[house_idx];
-        for (int i = 0; i < board_size; i++)
-            if ((1 << i) & idx_mask)
-                res += fmt::format("{},", cell_name(house[i]));
-        res.back() = '=';
-        for (int i = 0; i < board_size; i++)
-            if ((1 << i) & candidates)
-                res += fmt::format("{},", i + 1);
-        res.pop_back();
-        return res;
+        return fmt::format("Hidden {}: in {}, {}={}", //
+            tuple_names[std::popcount(idx_mask)], house_name(house_idx), //
+            describe_cells_in_house(house_idx, idx_mask), //
+            describe_candidates(candidates));
     }
 
     std::optional<HiddenSubset> HiddenSubset::try_find(const Board& board, const int size)
@@ -255,6 +240,6 @@ namespace sltd
             if ((1 << i) & idx_mask)
                 board.cells[house[i]] &= candidates;
         if (std::has_single_bit(idx_mask)) // Hidden single
-            board.reduce_candidates_from_naked_single(house[std::countr_zero(idx_mask)]);
+            board.eliminate_candidates_from_naked_single(house[std::countr_zero(idx_mask)]);
     }
 } // namespace sltd

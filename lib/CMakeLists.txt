@@ -17,6 +17,7 @@ target_add_sources(solitude "include/solitude/"
     "generator.h"
     "strategies.h"
     "utils.h"
+    "strategies/intersection.h"
     "strategies/subsets.h"
 )
 
@@ -27,6 +28,7 @@ target_add_sources(solitude "src/"
     "utils.cpp"
     "strategies/common.h"
     "strategies/common.cpp"
+    "strategies/intersection.cpp"
     "strategies/subsets.cpp"
 )
 

@@ -12,22 +12,6 @@
 
 #include "benchmark.h"
 
-// [x] single
-// [ ] intersection
-// [x] pair
-// [ ] x-wing
-// [x] triple
-// [ ] single digit 2-length chain, finned x-wing
-// [ ] xy-wing, w-wing
-// [ ] swordfish, jellyfish, finned or not
-// [ ] x-chain, xy-chain
-// [ ] arbitrary chains
-// [ ] ALS
-// [ ] more insane fish
-// [ ] fish with chains
-// [ ] forcing chains, forcing nets
-// [ ] brute force
-
 using namespace std::chrono_literals;
 using namespace sltd;
 
@@ -37,9 +21,10 @@ public:
     explicit TestCaseFinder( //
         const std::filesystem::path& path, //
         const std::size_t target = 10'000, //
-        const bool show_steps = false):
+        const bool show_steps = false, //
+        const bool check_solver_correctness = false):
         file_(path),
-        target_(target), show_steps_(show_steps)
+        target_(target), show_steps_(show_steps), check_solver_correctness_(check_solver_correctness)
     {
     }
 
@@ -56,6 +41,8 @@ public:
                 if (solve_with<NakedSingle>())
                     continue;
                 if (solve_with<HiddenSubset>(1))
+                    continue;
+                if (solve_with<Intersection>())
                     continue;
                 if (solve_with<NakedSubset>(2))
                     continue;
@@ -93,6 +80,7 @@ private:
     std::ofstream file_;
     std::size_t target_ = 0;
     bool show_steps_ = false;
+    bool check_solver_correctness_ = false;
     std::size_t puzzle_count_ = 0;
     std::size_t case_count_ = 0;
     Board current_;
@@ -104,23 +92,29 @@ private:
         if (const auto opt = Solver::try_find(current_, static_cast<Args&&>(args)...))
         {
             upon_finding();
-            opt->apply_to(current_);
-            for (int i = 0; i < cell_count; i++)
-                if (const auto solution = current_solved_.cells[i]; //
-                    (solution & current_.cells[i]) != solution)
-                {
-                    fmt::println("The solver is faulty");
-                    throw std::runtime_error("The solver is faulty");
-                }
             if (show_steps_)
             {
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                // if constexpr (std::is_same_v<Solver, NakedSubset>)
-                //     if ((args, ...) == 4)
-                //         (void)std::getchar();
+                // if constexpr (std::is_same_v<Solver, Intersection>)
+                //     (void)std::getchar();
             }
+            if (check_solver_correctness_)
+            {
+                const Board before_apply = current_;
+                opt->apply_to(current_);
+                for (int i = 0; i < cell_count; i++)
+                    if (const auto solution = current_solved_.cells[i]; //
+                        (solution & current_.cells[i]) != solution)
+                    {
+                        fmt::println("The solver is faulty\nSolver name: {}\nBoard state: {}", //
+                            Solver::name, before_apply.full_repr());
+                        throw std::runtime_error("The solver is faulty");
+                    }
+            }
+            else
+                opt->apply_to(current_);
             return true;
         }
         return false;
@@ -185,12 +179,23 @@ private:
 
 void debug()
 {
-    constexpr std::string_view puzzle = "824713965(137)69548(12)(17)(12)(17)(17)5269(18)349(178)"
-                                        "(18)(16)3(47)(1568)2(18)6(18)39524(18)7(147)52(16)8(47)"
-                                        "(16)(19)3246375(18)(189)(189)(13)(138)(18)49675(128)597821346";
+    constexpr std::string_view puzzle = "951643(28)(28)74721893566837524193(49)5"
+                                        "(489)(79)6(278)(289)17(19)8(59)2(15)634"
+                                        "2(149)63(179)(148)(78)(89)5124(58)6(58)"
+                                        "973569237148837(49)(19)(14)562";
     const auto board = Board::from_full_repr(puzzle);
-    board.print();
-    fmt::println("{}", NakedSubset::try_find(board, 2)->description());
+    board.print(true);
+    if (const auto opt = Intersection::try_find(board))
+        fmt::println("{}", opt->description());
+    else
+        fmt::println("Didn't find anything");
+}
+
+void generate_test()
+{
+    const std::filesystem::path path = "test_cases/naked_triple.txt";
+    TestCaseFinder finder{path, 10'000, true, true};
+    finder.run();
 }
 
 void run_test()
@@ -198,13 +203,6 @@ void run_test()
     const std::filesystem::path path = "test_cases/naked_pair.txt";
     Tester tester(path);
     tester.test<NakedSubset>(2);
-}
-
-void generate_test()
-{
-    const std::filesystem::path path = "test_cases/naked_triple.txt";
-    TestCaseFinder finder{path, 10'000, true};
-    finder.run();
 }
 
 int main()

@@ -50,7 +50,7 @@ namespace sltd
                 current.set_unknown_at(pair.second);
             }
         }
-        current.reduce_candidates();
+        current.eliminate_candidates();
         return current;
     }
 } // namespace sltd
