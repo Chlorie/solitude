@@ -3,8 +3,6 @@
 #include <bitset>
 #include <fstream>
 #include <filesystem>
-#include <clu/static_vector.h>
-#include <clu/random.h>
 
 #include <solitude/board.h>
 #include <solitude/generator.h>
@@ -30,6 +28,7 @@ public:
 
     void run()
     {
+        const auto begin = bench::clock::now();
         auto last_update = bench::clock::now();
         while (case_count_ < target_)
         {
@@ -48,6 +47,8 @@ public:
                     continue;
                 if (solve_with<HiddenSubset>(2))
                     continue;
+                if (solve_with<Fish>(2))
+                    continue;
                 if (solve_with<NakedSubset>(3))
                     continue;
                 if (solve_with<HiddenSubset>(3))
@@ -56,22 +57,26 @@ public:
                     continue;
                 if (solve_with<HiddenSubset>(4))
                     continue;
+                if (solve_with<Fish>(3))
+                    continue;
                 if (show_steps_)
                 {
                     fmt::print("\x1b[H");
                     current_.print(true);
                     fmt::println("\x1b[0JCan't solve using given strategies");
-                    (void)std::getchar();
+                    // (void)std::getchar();
                 }
                 break;
             }
             puzzle_count_++;
             if (show_steps_)
                 continue;
-            if (const auto now = bench::clock::now(); now - last_update >= 2s)
+            if (const auto now = bench::clock::now(); //
+                case_count_ == target_ || now - last_update >= 2s)
             {
                 last_update = now;
-                fmt::println("Generated {:6} puzzles, found {:6} test cases", puzzle_count_, case_count_);
+                fmt::println("[{:5}s] Generated {:7} puzzles, found {:6} test cases", //
+                    (now - begin) / 1s, puzzle_count_, case_count_);
             }
         }
     }
@@ -97,8 +102,9 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                // if constexpr (std::is_same_v<Solver, Intersection>)
-                //     (void)std::getchar();
+                if constexpr (std::is_same_v<Solver, Fish>)
+                    if ((args, ...) == 3)
+                        (void)std::getchar();
             }
             if (check_solver_correctness_)
             {
@@ -193,8 +199,8 @@ void debug()
 
 void generate_test()
 {
-    const std::filesystem::path path = "test_cases/naked_triple.txt";
-    TestCaseFinder finder{path, 10'000, true, true};
+    const std::filesystem::path path = "test_cases/vanilla_xwing.txt";
+    TestCaseFinder finder{path, 1'000, false, true};
     finder.run();
 }
 

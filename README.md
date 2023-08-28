@@ -7,15 +7,15 @@ Implementation of human-like sudoku solving strategies.
 - [x] single
 - [x] intersection
 - [x] pair
-- [ ] x-wing
+- [x] x-wing
 - [x] triple
-- [ ] single digit 2-length chain, finned x-wing
+- [ ] finned (sashimi) x-wing
 - [ ] xy-wing, w-wing
 - [ ] swordfish, jellyfish, finned or not
 - [ ] x-chain, xy-chain
 - [ ] arbitrary chains
 - [ ] ALS
 - [ ] more insane fish
-- [ ] fish with chains
+- [ ] kraken fish (fish w/ chain)
 - [ ] forcing chains, forcing nets
 - [x] brute force

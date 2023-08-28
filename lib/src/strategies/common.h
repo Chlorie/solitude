@@ -29,8 +29,14 @@ namespace sltd
 
     constexpr auto house_indices = generate_house_indices();
 
+    std::array<CandidateMask, board_size> extract_row_patterns(const Board& board, int number);
+    std::array<CandidateMask, board_size> extract_column_patterns(const Board& board, int number);
+    std::array<CandidateMask, board_size> extract_box_patterns(const Board& board, int number);
+
     std::string cell_name(int idx);
     std::string house_name(int idx);
+    std::string describe_houses(HouseMask houses, char separator = ',');
     std::string describe_cells_in_house(int house_idx, CandidateMask idx_mask, char separator = ',');
+    std::string describe_cells(PatternMask cells, char separator = ',');
     std::string describe_candidates(CandidateMask candidates, char separator = ',');
 } // namespace sltd

@@ -4,6 +4,7 @@
 #include <bitset>
 #include <string_view>
 #include <string>
+#include <clu/type_traits.h>
 
 #include "export.h"
 
@@ -18,6 +19,7 @@ namespace sltd
     static_assert(board_size <= 16, "Max candidate count is 16");
 
     using CandidateMask = std::uint16_t;
+    using HouseMask = clu::conditional_t<(board_size > 10), std::uint64_t, std::uint32_t>;
     using PatternMask = std::bitset<cell_count>;
     inline constexpr CandidateMask full_mask = ~(~CandidateMask{} << board_size);
 

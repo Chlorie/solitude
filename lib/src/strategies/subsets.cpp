@@ -11,15 +11,15 @@ namespace sltd
     namespace
     {
         constexpr std::string_view tuple_names[]{
-            {}, "single", "pair", "triple", "quadruple", //
-            "quintuple", "sextuple", "septuple", "octuple" //
+            {}, "Single", "Pair", "Triple", "Quadruple", //
+            "Quintuple", "Sextuple", "Septuple", "Octuple" //
         };
 
         template <int Size>
-        class NakedSubsetImpl
+        class NakedSubsetFinder
         {
         public:
-            explicit NakedSubsetImpl(const Board& board): board_(board) {}
+            explicit NakedSubsetFinder(const Board& board): board_(board) {}
 
             std::optional<NakedSubset> try_find()
             {
@@ -84,16 +84,16 @@ namespace sltd
         };
 
         template <int Size>
-        std::optional<NakedSubset> naked_subset_impl(const Board& board)
+        std::optional<NakedSubset> find_naked_subset(const Board& board)
         {
-            return NakedSubsetImpl<Size>(board).try_find();
+            return NakedSubsetFinder<Size>(board).try_find();
         }
 
         template <int Size>
-        class HiddenSubsetImpl
+        class HiddenSubsetFinder
         {
         public:
-            explicit HiddenSubsetImpl(const Board& board): board_(board) {}
+            explicit HiddenSubsetFinder(const Board& board): board_(board) {}
 
             std::optional<HiddenSubset> try_find()
             {
@@ -153,9 +153,9 @@ namespace sltd
         };
 
         template <int Size>
-        std::optional<HiddenSubset> hidden_subset_impl(const Board& board)
+        std::optional<HiddenSubset> find_hidden_subset(const Board& board)
         {
-            return HiddenSubsetImpl<Size>(board).try_find();
+            return HiddenSubsetFinder<Size>(board).try_find();
         }
     } // namespace
 
@@ -193,7 +193,7 @@ namespace sltd
         static constexpr auto fptrs = []<std::size_t... I>(std::index_sequence<I...>)
         {
             return std::array<std::optional<NakedSubset> (*)(const Board&), sizeof...(I)>{
-                naked_subset_impl<I + 2>... //
+                find_naked_subset<I + 2>... //
             };
         }(std::make_index_sequence<(board_size / 2 - 1)>{});
         if (size > board_size / 2)
@@ -225,7 +225,7 @@ namespace sltd
         static constexpr auto fptrs = []<std::size_t... I>(std::index_sequence<I...>)
         {
             return std::array<std::optional<HiddenSubset> (*)(const Board&), sizeof...(I)>{
-                hidden_subset_impl<I + 1>... //
+                find_hidden_subset<I + 1>... //
             };
         }(std::make_index_sequence<(board_size / 2)>{});
         if (size > board_size / 2)

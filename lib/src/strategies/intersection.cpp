@@ -8,19 +8,6 @@ namespace sltd
 {
     namespace
     {
-        auto extract_patterns(const Board& board, const int number)
-        {
-            const CandidateMask bit = 1 << number;
-            std::array<CandidateMask, house_indices.size()> res{};
-            for (std::size_t i = 0; i < house_indices.size(); i++)
-            {
-                const auto& house = house_indices[i];
-                for (int j = 0; j < board_size; j++)
-                    res[i] |= ((board.cells[house[j]] & bit) != 0) << j;
-            }
-            return res;
-        }
-
         constexpr CandidateMask calc_box_column_intersection()
         {
             CandidateMask res = 0;
@@ -36,7 +23,7 @@ namespace sltd
 
     std::string Intersection::description() const
     {
-        return fmt::format("Intersection: {} -> {}, {}={}", //
+        return fmt::format("Intersection: {}->{}, {}={}", //
             house_name(base_house_idx), house_name(cover_house_idx), //
             describe_cells_in_house(base_house_idx, base_idx_mask, '/'), //
             describe_candidates(candidate));
@@ -46,10 +33,12 @@ namespace sltd
     {
         for (int number = 0; number < board_size; number++)
         {
-            const auto patterns = extract_patterns(board, number);
+            const auto row_patterns = extract_row_patterns(board, number);
+            const auto col_patterns = extract_column_patterns(board, number);
+            const auto box_patterns = extract_box_patterns(board, number);
             for (int box = 0; box < board_size; box++)
             {
-                const auto box_pattern = patterns[2 * board_size + box];
+                const auto box_pattern = box_patterns[box];
                 const int box_row = box / box_height, box_col = box % box_height;
                 const auto row_intersection = row_box_intersection << (box_width * box_col);
                 const auto col_intersection = column_box_intersection << (box_height * box_row);
@@ -57,7 +46,7 @@ namespace sltd
                 // Box-row intersection
                 for (int row = 0; row < box_height; row++)
                 {
-                    const auto row_pattern = patterns[row_offset + row];
+                    const auto row_pattern = row_patterns[row_offset + row];
                     const auto box_intersection = row_box_intersection << (box_width * row);
                     const bool box_is_base = (box_pattern & box_intersection) == box_pattern;
                     const bool row_is_base = (row_pattern & row_intersection) == row_pattern;
@@ -76,7 +65,7 @@ namespace sltd
                 // Box-col intersection
                 for (int col = 0; col < box_width; col++)
                 {
-                    const auto col_pattern = patterns[board_size + col_offset + col];
+                    const auto col_pattern = col_patterns[col_offset + col];
                     const auto box_intersection = box_column_intersection << col;
                     const bool box_is_base = (box_pattern & box_intersection) == box_pattern;
                     const bool col_is_base = (col_pattern & col_intersection) == col_pattern;
