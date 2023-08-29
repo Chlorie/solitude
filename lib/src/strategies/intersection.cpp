@@ -6,21 +6,6 @@
 
 namespace sltd
 {
-    namespace
-    {
-        constexpr CandidateMask calc_box_column_intersection()
-        {
-            CandidateMask res = 0;
-            for (int i = 0; i < board_size; i += box_width)
-                res |= 1 << i;
-            return res;
-        }
-
-        constexpr CandidateMask row_box_intersection = ~(~CandidateMask{} << box_width);
-        constexpr CandidateMask column_box_intersection = ~(~CandidateMask{} << box_height);
-        constexpr CandidateMask box_column_intersection = calc_box_column_intersection();
-    } // namespace
-
     std::string Intersection::description() const
     {
         return fmt::format("Intersection: {}->{}, {}={}", //

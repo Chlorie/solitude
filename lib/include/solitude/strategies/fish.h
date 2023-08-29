@@ -15,10 +15,11 @@ namespace sltd
         HouseMask base_sets = 0;
         HouseMask cover_sets = 0;
         CandidateMask candidate = 0;
+        PatternMask fins;
         PatternMask eliminations;
 
         std::string description() const;
-        static std::optional<Fish> try_find(const Board& board, int size);
+        static std::optional<Fish> try_find(const Board& board, int size, bool finned);
         void apply_to(Board& board) const;
     };
 }

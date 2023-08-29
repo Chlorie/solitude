@@ -33,6 +33,10 @@ public:
         while (case_count_ < target_)
         {
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
+            // current_ = Board::from_full_repr(
+            //     "(13)496(37)2(17)852(38)7(358)(358)1694(1568)(68)(156)9(478)(48)23(17)(3689)5(1346)(348)27(34)(146)(89)"
+            //     "(3689)72(348)1(389)5(46)(89)(1389)(389)(134)(3458)6(3589)(134)72(359)281(3459)6(47)(45)(37)7(369)(356)"
+            //     "2(3459)(345)8(145)(136)41(356)7(358)(358)92(36)");
             current_solved_ = current_;
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
@@ -47,17 +51,25 @@ public:
                     continue;
                 if (solve_with<HiddenSubset>(2))
                     continue;
-                if (solve_with<Fish>(2))
+                if (solve_with<Fish>(2, false)) // X-wing
                     continue;
                 if (solve_with<NakedSubset>(3))
                     continue;
                 if (solve_with<HiddenSubset>(3))
                     continue;
+                if (solve_with<Fish>(2, true)) // Finned X-wing
+                    continue;
+                if (solve_with<Fish>(3, false)) // Swordfish
+                    continue;
+                if (solve_with<Fish>(3, true)) // Finned Swordfish
+                    continue;
                 if (solve_with<NakedSubset>(4))
                     continue;
                 if (solve_with<HiddenSubset>(4))
                     continue;
-                if (solve_with<Fish>(3))
+                if (solve_with<Fish>(4, false)) // Jellyfish
+                    continue;
+                if (solve_with_target<Fish>(4, true)) // Finned Jellyfish
                     continue;
                 if (show_steps_)
                 {
@@ -103,7 +115,7 @@ private:
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
                 if constexpr (std::is_same_v<Solver, Fish>)
-                    if ((args, ...) == 3)
+                    if (std::pair{args...}.first >= 4)
                         (void)std::getchar();
             }
             if (check_solver_correctness_)
@@ -185,13 +197,14 @@ private:
 
 void debug()
 {
-    constexpr std::string_view puzzle = "951643(28)(28)74721893566837524193(49)5"
-                                        "(489)(79)6(278)(289)17(19)8(59)2(15)634"
-                                        "2(149)63(179)(148)(78)(89)5124(58)6(58)"
-                                        "973569237148837(49)(19)(14)562";
+    constexpr std::string_view puzzle = "(47)(56)(56)(478)19(37)2(38)(12)3(1278)6(78)594"
+                                        "(18)9(147)(178)2(3478)(37)(17)65(13)(15)(135)"
+                                        "(89)(89)2476(47)(467)(67)351289829(47)(47)6(13)"
+                                        "5(13)58(37)(79)(2379)461(27)6941(27)853(27)(123)"
+                                        "(17)(1237)56(37)894";
     const auto board = Board::from_full_repr(puzzle);
     board.print(true);
-    if (const auto opt = Intersection::try_find(board))
+    if (const auto opt = Fish::try_find(board, 4, false))
         fmt::println("{}", opt->description());
     else
         fmt::println("Didn't find anything");
@@ -199,8 +212,8 @@ void debug()
 
 void generate_test()
 {
-    const std::filesystem::path path = "test_cases/vanilla_xwing.txt";
-    TestCaseFinder finder{path, 1'000, false, true};
+    const std::filesystem::path path = "test_cases/finned_jellyfish.txt";
+    TestCaseFinder finder{path, 1000, false, true};
     finder.run();
 }
 

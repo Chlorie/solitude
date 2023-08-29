@@ -9,9 +9,11 @@ Implementation of human-like sudoku solving strategies.
 - [x] pair
 - [x] x-wing
 - [x] triple
-- [ ] finned (sashimi) x-wing
+- [x] finned (sashimi) x-wing
 - [ ] xy-wing, w-wing
-- [ ] swordfish, jellyfish, finned or not
+- [x] (finned) swordfish
+- [x] quadruple
+- [x] (finned) jellyfish
 - [ ] x-chain, xy-chain
 - [ ] arbitrary chains
 - [ ] ALS

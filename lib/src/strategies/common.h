@@ -33,6 +33,18 @@ namespace sltd
     std::array<CandidateMask, board_size> extract_column_patterns(const Board& board, int number);
     std::array<CandidateMask, board_size> extract_box_patterns(const Board& board, int number);
 
+    constexpr CandidateMask calc_box_column_intersection()
+    {
+        CandidateMask res = 0;
+        for (int i = 0; i < board_size; i += box_width)
+            res |= 1 << i;
+        return res;
+    }
+
+    constexpr CandidateMask row_box_intersection = ~(~CandidateMask{} << box_width);
+    constexpr CandidateMask column_box_intersection = ~(~CandidateMask{} << box_height);
+    constexpr CandidateMask box_column_intersection = calc_box_column_intersection();
+
     std::string cell_name(int idx);
     std::string house_name(int idx);
     std::string describe_houses(HouseMask houses, char separator = ',');

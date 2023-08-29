@@ -216,6 +216,7 @@ namespace sltd
                 board.cells[i] = from_char_repr(str[i]);
                 board.filled.set(i);
             }
+        board.eliminate_candidates();
         return board;
     }
 

@@ -196,7 +196,7 @@ namespace sltd
                 find_naked_subset<I + 2>... //
             };
         }(std::make_index_sequence<(board_size / 2 - 1)>{});
-        if (size > board_size / 2)
+        if (size > board_size / 2 || size <= 1)
             return std::nullopt;
         return fptrs[size - 2](board);
     }
@@ -228,7 +228,7 @@ namespace sltd
                 find_hidden_subset<I + 1>... //
             };
         }(std::make_index_sequence<(board_size / 2)>{});
-        if (size > board_size / 2)
+        if (size > board_size / 2 || size < 1)
             return std::nullopt;
         return fptrs[size - 1](board);
     }
