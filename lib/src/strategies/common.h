@@ -27,7 +27,7 @@ namespace sltd
         return res;
     }
 
-    constexpr auto house_indices = generate_house_indices();
+    inline constexpr auto house_indices = generate_house_indices();
 
     std::array<CandidateMask, board_size> extract_row_patterns(const Board& board, int number);
     std::array<CandidateMask, board_size> extract_column_patterns(const Board& board, int number);
@@ -41,9 +41,27 @@ namespace sltd
         return res;
     }
 
-    constexpr CandidateMask row_box_intersection = ~(~CandidateMask{} << box_width);
-    constexpr CandidateMask column_box_intersection = ~(~CandidateMask{} << box_height);
-    constexpr CandidateMask box_column_intersection = calc_box_column_intersection();
+    inline constexpr CandidateMask row_box_intersection = ~(~CandidateMask{} << box_width);
+    inline constexpr CandidateMask column_box_intersection = ~(~CandidateMask{} << box_height);
+    inline constexpr CandidateMask box_column_intersection = calc_box_column_intersection();
+
+    constexpr auto generate_peer_masks()
+    {
+        std::array<PatternMask, cell_count> res{};
+        for (const auto& house : house_indices)
+        {
+            PatternMask house_mask;
+            for (const int i : house)
+                house_mask.set(i);
+            for (const int i : house)
+                res[i] |= house_mask;
+        }
+        for (int i = 0; i < cell_count; i++)
+            res[i].reset(i); // A cell is not a peer to itself
+        return res;
+    }
+
+    inline constexpr auto peer_masks = generate_peer_masks();
 
     std::string cell_name(int idx);
     std::string house_name(int idx);

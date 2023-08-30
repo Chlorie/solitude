@@ -3,11 +3,12 @@
 #include <bitset>
 #include <fstream>
 #include <filesystem>
+#include <fmt/format.h>
+#include <fmt/chrono.h>
 
 #include <solitude/board.h>
 #include <solitude/generator.h>
 #include <solitude/strategies.h>
-#include <solitude/utils.h>
 
 #include "benchmark.h"
 
@@ -34,10 +35,8 @@ public:
         while (case_count_ < target_)
         {
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
-            // current_ = Board::from_full_repr(
-            //     "(13)496(37)2(17)852(38)7(358)(358)1694(1568)(68)(156)9(478)(48)23(17)(3689)5(1346)(348)27(34)(146)(89)"
-            //     "(3689)72(348)1(389)5(46)(89)(1389)(389)(134)(3458)6(3589)(134)72(359)281(3459)6(47)(45)(37)7(369)(356)"
-            //     "2(3459)(345)8(145)(136)41(356)7(358)(358)92(36)");
+            // current_ = Board::from_repr("5.3..76..9..1...2.........9.4.37.1.."
+            //                             "79.2.1....5..6........1..7346............9..5");
             current_solved_ = current_;
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
@@ -51,12 +50,15 @@ public:
                     solve_with<NakedSubset>(3) || //
                     solve_with<HiddenSubset>(3) || //
                     solve_with<Fish>(2, true) || // Finned X-wing
+                    solve_with<XYWing>() || //
+                    solve_with<XYZWing>() || //
+                    solve_with<WWing>() || //
                     solve_with<Fish>(3, false) || // Swordfish
                     solve_with<Fish>(3, true) || // Finned Swordfish
                     solve_with<NakedSubset>(4) || //
                     solve_with<HiddenSubset>(4) || //
                     solve_with<Fish>(4, false) || // Jellyfish
-                    solve_with<Fish>(4, true) // Finned Jellyfish
+                    solve_with_target<Fish>(4, true) // Finned Jellyfish
                 )
                     continue;
                 if (show_steps_)
@@ -102,9 +104,9 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                if constexpr (std::is_same_v<Solver, Fish>)
-                    if (std::pair{args...}.first >= 4)
-                        (void)std::getchar();
+                if constexpr (std::is_same_v<Solver, WWing>)
+                    //    if (std::pair{args...}.first >= 4)
+                    (void)std::getchar();
             }
             if (check_solver_correctness_)
             {
@@ -175,7 +177,7 @@ public:
                 }
                 i = (i + 1) % boards_.size();
             });
-        fmt::println("Time: {:8.3f}±{:8.3f}μs - {:7} iter ({:8.3f}μs ~ {:8.3f}μs)", //
+        fmt::println("Time: {:8.3f}±{:8.3f}μs - {:7} iter ({:6.1f}μs ~ {:6.1f}μs)", //
             t.mean / 1.0us, t.stddev / 1.0us, t.iterations, t.min / 1.0us, t.max / 1.0us);
     }
 
@@ -198,27 +200,24 @@ void debug()
         fmt::println("Didn't find anything");
 }
 
-void generate_test()
-{
-    const std::filesystem::path path = "test_cases/test.txt";
-    TestCaseFinder finder{path, 10'000, true, true};
-    finder.run();
-}
+void generate_test() { TestCaseFinder("test_cases/test.txt", 2'500, false, true).run(); }
 
 void run_test()
 {
-    const std::filesystem::path path = "test_cases/finned_swordfish.txt";
-    Tester tester(path);
-    tester.test<Fish>(3, true);
+    Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
+    Tester("test_cases/finned_swordfish.txt").test<Fish>(3, true);
+    Tester("test_cases/finned_jellyfish.txt").test<Fish>(4, true);
+    Tester("test_cases/xy_wing.txt").test<XYWing>();
+    Tester("test_cases/xyz_wing.txt").test<XYZWing>();
+    Tester("test_cases/w_wing.txt").test<WWing>();
 }
 
 int main()
 try
 {
     // debug();
-    // run_test();
-    generate_test();
-    return 0;
+    run_test();
+    // generate_test();
 }
 catch (const std::exception& e)
 {

@@ -48,6 +48,7 @@ namespace sltd
         void set_unknown_at(const int r, const int c) noexcept { set_unknown_at(r * board_size + c); }
 
         PatternMask pattern_of(int num) const noexcept;
+        std::array<PatternMask, board_size> all_number_patterns() const noexcept;
 
         static Board empty_board() noexcept;
         static Board random_filled_board() noexcept;

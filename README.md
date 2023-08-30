@@ -10,7 +10,7 @@ Implementation of human-like sudoku solving strategies.
 - [x] x-wing
 - [x] triple
 - [x] finned (sashimi) x-wing
-- [ ] xy-wing, w-wing
+- [x] xy-wing, w-wing
 - [x] (finned) swordfish
 - [x] quadruple
 - [x] (finned) jellyfish

@@ -43,6 +43,62 @@ namespace sltd
             int idx_;
         };
 
+        class SetBitEnumerator
+        {
+        public:
+            struct Sentinel
+            {
+            };
+
+            class Iterator
+            {
+            public:
+                constexpr explicit Iterator(const Bitset& self) noexcept: self_(&self) { ++*this; }
+
+                constexpr friend bool operator==(const Iterator it, Sentinel) noexcept { return it.idx_ >= Size; }
+
+                constexpr Iterator& operator++() noexcept
+                {
+                    idx_++;
+                    int i = idx_ / element_width;
+                    const int remainder = idx_ % element_width;
+                    if (const ElementType masked_element = self_->data_[i] & (all_bits_set_mask << remainder))
+                    {
+                        idx_ = i * element_width + std::countr_zero(masked_element);
+                        return *this;
+                    }
+                    for (++i; i < array_size; ++i)
+                        if (self_->data_[i] != 0)
+                        {
+                            idx_ = i * element_width + std::countr_zero(self_->data_[i]);
+                            return *this;
+                        }
+                    idx_ = Size;
+                    return *this;
+                }
+
+                constexpr Iterator operator++(int) noexcept
+                {
+                    Iterator res = *this;
+                    ++*this;
+                    return res;
+                }
+
+                constexpr int operator*() const noexcept { return idx_; }
+
+            private:
+                const Bitset* self_;
+                int idx_ = -1;
+            };
+
+            constexpr explicit SetBitEnumerator(const Bitset& self) noexcept: self_(&self) {}
+            constexpr Iterator begin() const noexcept { return Iterator(*self_); }
+            constexpr Sentinel end() const noexcept { return Sentinel{}; }
+
+        private:
+            const Bitset* self_;
+        };
+
         constexpr Bitset() noexcept = default;
 
         template <typename Uint>
@@ -87,6 +143,8 @@ namespace sltd
                 res += std::popcount(e);
             return res;
         }
+
+        constexpr auto set_bit_indices() const noexcept { return SetBitEnumerator(*this); }
 
         constexpr static int size() noexcept { return Size; }
 
@@ -149,6 +207,10 @@ namespace sltd
         constexpr Bitset operator<<(const int x) noexcept { return Bitset(*this) <<= x; }
 
         constexpr Bitset operator>>(const int x) noexcept { return Bitset(*this) >>= x; }
+
+        constexpr friend Bitset operator&(const Bitset& lhs, const Bitset& rhs) noexcept { return Bitset(lhs) &= rhs; }
+        constexpr friend Bitset operator|(const Bitset& lhs, const Bitset& rhs) noexcept { return Bitset(lhs) |= rhs; }
+        constexpr friend Bitset operator^(const Bitset& lhs, const Bitset& rhs) noexcept { return Bitset(lhs) ^= rhs; }
 
         constexpr Bitset& set() noexcept
         {

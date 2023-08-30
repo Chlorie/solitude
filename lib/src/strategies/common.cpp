@@ -2,6 +2,8 @@
 
 #include <fmt/format.h>
 
+#include "solitude/utils.h"
+
 namespace sltd
 {
     namespace
@@ -50,9 +52,8 @@ namespace sltd
         if (houses == 0)
             return "∅";
         std::string res;
-        for (int i = 0; i < 3 * board_size; i++)
-            if (houses & (1 << i))
-                res += fmt::format("{}{}{}", "rcb"[i / board_size], i % board_size + 1, separator);
+        for (const int i : set_bit_indices(houses))
+            res += fmt::format("{}{}{}", "rcb"[i / board_size], i % board_size + 1, separator);
         res.pop_back();
         return res;
     }
@@ -63,9 +64,8 @@ namespace sltd
             return "∅";
         std::string res;
         const auto& house = house_indices[house_idx];
-        for (int i = 0; i < board_size; i++)
-            if ((1 << i) & idx_mask)
-                res += fmt::format("{}{}", cell_name(house[i]), separator);
+        for (const int i : set_bit_indices(idx_mask))
+            res += fmt::format("{}{}", cell_name(house[i]), separator);
         res.pop_back();
         return res;
     }
@@ -87,9 +87,8 @@ namespace sltd
         if (candidates == 0)
             return "∅";
         std::string res;
-        for (int i = 0; i < board_size; i++)
-            if ((1 << i) & candidates)
-                res += fmt::format("{}{}", i + 1, separator);
+        for (const int i : set_bit_indices(candidates))
+            res += fmt::format("{}{}", i + 1, separator);
         res.pop_back();
         return res;
     }

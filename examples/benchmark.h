@@ -1,8 +1,7 @@
 #pragma once
 
 #include <chrono>
-#include <fmt/format.h>
-#include <fmt/chrono.h>
+#include <cstddef>
 
 namespace bench
 {

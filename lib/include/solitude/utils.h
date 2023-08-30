@@ -47,7 +47,6 @@ namespace sltd
         };
 
         constexpr explicit SetBitsEnumerator(const T value) noexcept: value_(value) {}
-
         constexpr Iterator begin() const noexcept { return Iterator(value_); }
         constexpr Sentinel end() const noexcept { return Sentinel{}; }
 
@@ -57,7 +56,7 @@ namespace sltd
 
     template <typename T>
         requires std::is_unsigned_v<T>
-    constexpr auto enumerate_set_bits(const T value) noexcept
+    constexpr auto set_bit_indices(const T value) noexcept
     {
         return SetBitsEnumerator<T>(value);
     }

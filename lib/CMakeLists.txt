@@ -12,6 +12,7 @@ endfunction ()
 
 target_add_sources(solitude "include/solitude/"
     # Header files here
+    "bitset.h"
     "board.h"
     "export.h"
     "generator.h"
@@ -20,6 +21,7 @@ target_add_sources(solitude "include/solitude/"
     "strategies/fish.h"
     "strategies/intersection.h"
     "strategies/subsets.h"
+    "strategies/wings.h"
 )
 
 target_add_sources(solitude "src/"
@@ -32,6 +34,7 @@ target_add_sources(solitude "src/"
     "strategies/fish.cpp"
     "strategies/intersection.cpp"
     "strategies/subsets.cpp"
+    "strategies/wings.cpp"
 )
 
 find_package(clu CONFIG REQUIRED)

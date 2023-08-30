@@ -2,6 +2,7 @@
 
 #include <fmt/format.h>
 
+#include "solitude/utils.h"
 #include "common.h"
 
 namespace sltd
@@ -40,13 +41,10 @@ namespace sltd
         void add_eliminations(PatternMask& eliminations, //
             const bool row_based, const int cover_house_idx, const CandidateMask cover_pattern)
         {
-            if (!cover_pattern) // No elimination
-                return;
-            for (int i = 0; i < board_size; i++)
-                if ((1 << i) & cover_pattern)
-                    eliminations.set(row_based //
-                            ? i * board_size + cover_house_idx
-                            : cover_house_idx * board_size + i);
+            for (const int i : set_bit_indices(cover_pattern))
+                eliminations.set(row_based //
+                        ? i * board_size + cover_house_idx
+                        : cover_house_idx * board_size + i);
         }
 
         template <int Size>
@@ -100,9 +98,8 @@ namespace sltd
                         // Find eliminations
                         const CandidateMask base_sets = sltd::indices_to_mask(base_idx_);
                         PatternMask eliminations;
-                        for (int j = 0; j < board_size; j++)
-                            if ((1 << j) & cover_sets)
-                                add_eliminations(eliminations, row_based, j, cover_patterns[j] & ~base_sets);
+                        for (const int j : set_bit_indices(cover_sets))
+                            add_eliminations(eliminations, row_based, j, cover_patterns[j] & ~base_sets);
 
                         if (eliminations.any())
                         {
@@ -221,10 +218,9 @@ namespace sltd
                     const CandidateMask intersection_mask = row_based //
                         ? (column_box_intersection << row_offset)
                         : (row_box_intersection << col_offset);
-                    for (int i = 0; i < board_size; i++)
-                        if ((1 << i) & cover_sets_intersecting_with_fin_box)
-                            add_eliminations(eliminations, row_based, i, //
-                                cover_patterns[i] & ~base_sets & intersection_mask);
+                    for (const int i : set_bit_indices(cover_sets_intersecting_with_fin_box))
+                        add_eliminations(eliminations, row_based, i, //
+                            cover_patterns[i] & ~base_sets & intersection_mask);
 
                     // We've found some eliminations, save the results
                     if (eliminations.any())
@@ -232,14 +228,9 @@ namespace sltd
                         // We need to find all the fins
                         PatternMask fins;
                         for (const int base : base_idx_)
-                        {
-                            const CandidateMask fin_mask = base_patterns[base] & ~cover_sets;
-                            if (fin_mask == 0)
-                                continue;
-                            for (int i = 0; i < board_size; i++)
-                                if ((1 << i) & fin_mask)
-                                    fins.set(row_based ? base * board_size + i : i * board_size + base);
-                        }
+                            for (const CandidateMask fin_mask = base_patterns[base] & ~cover_sets;
+                                 const int i : set_bit_indices(fin_mask))
+                                fins.set(row_based ? base * board_size + i : i * board_size + base);
 
                         res_ = Fish{
                             .base_sets = static_cast<HouseMask>(base_sets) << (row_based ? 0 : board_size),
@@ -263,7 +254,7 @@ namespace sltd
 
     std::string Fish::description() const
     {
-        return fmt::format("{}{}: Number {} in {}->{},{} {}!={}", //
+        return fmt::format("{}{}: Number {} in {}->{},{} [{}!={}]", //
             fins.any() ? "Finned " : "", get_fish_name(std::popcount(base_sets)), //
             describe_candidates(candidate), //
             describe_houses(base_sets), describe_houses(cover_sets), //
@@ -295,8 +286,7 @@ namespace sltd
 
     void Fish::apply_to(Board& board) const
     {
-        for (int i = 0; i < cell_count; i++)
-            if (eliminations[i])
-                board.cells[i] &= ~candidate;
+        for (const int i : eliminations.set_bit_indices())
+            board.cells[i] &= ~candidate;
     }
 } // namespace sltd

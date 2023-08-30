@@ -60,10 +60,8 @@ namespace sltd
                 }
                 // Find cell with the least candidates
                 int min_candidates = board_size + 1, min_idx = 0;
-                for (int i = 0; i < cell_count; i++)
-                {
-                    if (state.filled[i])
-                        continue;
+                for (const auto not_filled = ~state.filled; //
+                     const int i : not_filled.set_bit_indices())
                     if (const auto count = std::popcount(state.cells[i]); count < min_candidates)
                     {
                         min_candidates = count;
@@ -71,7 +69,6 @@ namespace sltd
                         if (min_candidates == 2)
                             break;
                     }
-                }
                 // Try the candidates one by one
                 auto candidates = state.cells[min_idx];
                 while (candidates != 0)
@@ -120,7 +117,8 @@ namespace sltd
         std::string braille_dots(const std::uint8_t value)
         {
             const std::uint32_t cp = 0x2800 + value;
-            const char bytes[4]{ // Convert codepoint to 3 UTF-8 bytes
+            const char bytes[4]{
+                // Convert codepoint to 3 UTF-8 bytes
                 static_cast<char>(((cp >> 12) & 0xf) | 0xe0), //
                 static_cast<char>(((cp >> 6) & 0x3f) | 0x80),
                 static_cast<char>((cp & 0x3f) | 0x80) //
@@ -131,12 +129,11 @@ namespace sltd
         std::string candidates_to_braille_patterns(const CandidateMask candidates)
         {
             std::pair<std::uint8_t, std::uint8_t> values{};
-            for (int i = 0; i < board_size; i++)
-                if (candidates & (1 << i))
-                {
-                    const auto [second, added] = candidate_braille_positions[i];
-                    (second ? values.second : values.first) += added;
-                }
+            for (const int i : set_bit_indices(candidates))
+            {
+                const auto [second, added] = candidate_braille_positions[i];
+                (second ? values.second : values.first) += added;
+            }
             return braille_dots(values.first) + braille_dots(values.second);
         }
     } // namespace
@@ -144,9 +141,8 @@ namespace sltd
     void Board::set_number_at(const int num, const PatternMask mask) noexcept
     {
         const CandidateMask bit = 1 << num;
-        for (int i = 0; i < cell_count; i++)
-            if (mask.test(i))
-                cells[i] = bit;
+        for (const int i : mask.set_bit_indices())
+            cells[i] = bit;
         filled |= mask;
     }
 
@@ -156,6 +152,14 @@ namespace sltd
         const CandidateMask bit = 1 << num;
         for (int i = 0; i < cell_count; i++)
             res.set(i, (cells[i] & bit) != 0);
+        return res;
+    }
+
+    std::array<PatternMask, board_size> Board::all_number_patterns() const noexcept
+    {
+        std::array<PatternMask, board_size> res;
+        for (int i = 0; i < board_size; i++)
+            res[i] = pattern_of(i);
         return res;
     }
 
@@ -278,13 +282,9 @@ namespace sltd
 
     bool Board::eliminate_candidates() noexcept
     {
-        for (int i = 0; i < cell_count; i++)
-        {
-            if (!filled[i])
-                continue;
+        for (const int i : filled.set_bit_indices())
             if (!eliminate_candidates_from_naked_single(i))
                 return false;
-        }
         return true;
     }
 
@@ -326,9 +326,8 @@ namespace sltd
     std::string Board::repr() const
     {
         std::string res(cell_count, '.');
-        for (int i = 0; i < cell_count; i++)
-            if (filled[i])
-                res[i] = to_char_repr(cells[i]);
+        for (const int i : filled.set_bit_indices())
+            res[i] = to_char_repr(cells[i]);
         return res;
     }
 
@@ -342,9 +341,8 @@ namespace sltd
             else
             {
                 res.push_back('(');
-                for (int j = 0; j < board_size; j++)
-                    if (const CandidateMask bit = 1 << j; bit & cells[i])
-                        res.push_back(to_char_repr(bit));
+                for (const int j : set_bit_indices(cells[i]))
+                    res.push_back(to_char_repr(1 << j));
                 res.push_back(')');
             }
         return res;

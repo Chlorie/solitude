@@ -5,6 +5,7 @@
 #include <fmt/format.h>
 
 #include "common.h"
+#include "solitude/utils.h"
 
 namespace sltd
 {
@@ -56,10 +57,7 @@ namespace sltd
                         CandidateMask idx_mask = 0;
                         for (const int j : indices_)
                             idx_mask |= 1 << j;
-                        for (int j = 0; j < board_size; j++)
-                        {
-                            if ((1 << j) & idx_mask)
-                                continue;
+                        for (const int j : set_bit_indices<CandidateMask>(~idx_mask & full_mask))
                             // Can remove candidates, found the naked set
                             if (board_.cells[house_indices[house_idx_][j]] & candidates)
                             {
@@ -70,7 +68,6 @@ namespace sltd
                                 };
                                 return;
                             }
-                        }
                     }
                     else
                     {
@@ -204,12 +201,8 @@ namespace sltd
     void NakedSubset::apply_to(Board& board) const
     {
         const auto& house = house_indices[house_idx];
-        for (int i = 0; i < board_size; i++)
-        {
-            if ((1 << i) & idx_mask)
-                continue;
+        for (const int i : set_bit_indices<CandidateMask>(~idx_mask & full_mask))
             board.cells[house[i]] &= ~candidates;
-        }
     }
 
     std::string HiddenSubset::description() const
@@ -236,10 +229,13 @@ namespace sltd
     void HiddenSubset::apply_to(Board& board) const
     {
         const auto& house = house_indices[house_idx];
-        for (int i = 0; i < board_size; i++)
-            if ((1 << i) & idx_mask)
-                board.cells[house[i]] &= candidates;
+        for (const int i : set_bit_indices(idx_mask))
+            board.cells[house[i]] &= candidates;
         if (std::has_single_bit(idx_mask)) // Hidden single
-            board.eliminate_candidates_from_naked_single(house[std::countr_zero(idx_mask)]);
+        {
+            const int cell_idx = house[std::countr_zero(idx_mask)];
+            board.eliminate_candidates_from_naked_single(cell_idx);
+            board.filled.set(cell_idx);
+        }
     }
 } // namespace sltd

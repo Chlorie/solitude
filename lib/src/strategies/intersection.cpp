@@ -3,6 +3,7 @@
 #include <fmt/format.h>
 
 #include "common.h"
+#include "solitude/utils.h"
 
 namespace sltd
 {
@@ -74,8 +75,7 @@ namespace sltd
     void Intersection::apply_to(Board& board) const
     {
         const auto& house = house_indices[cover_house_idx];
-        for (int i = 0; i < board_size; i++)
-            if (cover_elimination_idx_mask & (1 << i))
-                board.cells[house[i]] &= ~candidate;
+        for (const int i : set_bit_indices(cover_elimination_idx_mask))
+            board.cells[house[i]] &= ~candidate;
     }
 } // namespace sltd
