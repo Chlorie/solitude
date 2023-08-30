@@ -1,12 +1,11 @@
 #pragma once
 
 #include <cstdint>
-#include <bitset>
-#include <string_view>
 #include <string>
 #include <clu/type_traits.h>
 
 #include "export.h"
+#include "bitset.h"
 
 SOLITUDE_SUPPRESS_EXPORT_WARNING
 
@@ -20,7 +19,7 @@ namespace sltd
 
     using CandidateMask = std::uint16_t;
     using HouseMask = clu::conditional_t<(board_size > 10), std::uint64_t, std::uint32_t>;
-    using PatternMask = std::bitset<cell_count>;
+    using PatternMask = Bitset<cell_count>;
     inline constexpr CandidateMask full_mask = ~(~CandidateMask{} << board_size);
 
     struct SOLITUDE_API Board final

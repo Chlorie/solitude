@@ -7,6 +7,7 @@
 #include <solitude/board.h>
 #include <solitude/generator.h>
 #include <solitude/strategies.h>
+#include <solitude/utils.h>
 
 #include "benchmark.h"
 
@@ -41,35 +42,22 @@ public:
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
             {
-                if (solve_with<NakedSingle>())
-                    continue;
-                if (solve_with<HiddenSubset>(1))
-                    continue;
-                if (solve_with<Intersection>())
-                    continue;
-                if (solve_with<NakedSubset>(2))
-                    continue;
-                if (solve_with<HiddenSubset>(2))
-                    continue;
-                if (solve_with<Fish>(2, false)) // X-wing
-                    continue;
-                if (solve_with<NakedSubset>(3))
-                    continue;
-                if (solve_with<HiddenSubset>(3))
-                    continue;
-                if (solve_with<Fish>(2, true)) // Finned X-wing
-                    continue;
-                if (solve_with<Fish>(3, false)) // Swordfish
-                    continue;
-                if (solve_with<Fish>(3, true)) // Finned Swordfish
-                    continue;
-                if (solve_with<NakedSubset>(4))
-                    continue;
-                if (solve_with<HiddenSubset>(4))
-                    continue;
-                if (solve_with<Fish>(4, false)) // Jellyfish
-                    continue;
-                if (solve_with_target<Fish>(4, true)) // Finned Jellyfish
+                if (solve_with<NakedSingle>() || //
+                    solve_with<HiddenSubset>(1) || //
+                    solve_with<Intersection>() || //
+                    solve_with<NakedSubset>(2) || //
+                    solve_with<HiddenSubset>(2) || //
+                    solve_with<Fish>(2, false) || // X-wing
+                    solve_with<NakedSubset>(3) || //
+                    solve_with<HiddenSubset>(3) || //
+                    solve_with<Fish>(2, true) || // Finned X-wing
+                    solve_with<Fish>(3, false) || // Swordfish
+                    solve_with<Fish>(3, true) || // Finned Swordfish
+                    solve_with<NakedSubset>(4) || //
+                    solve_with<HiddenSubset>(4) || //
+                    solve_with<Fish>(4, false) || // Jellyfish
+                    solve_with<Fish>(4, true) // Finned Jellyfish
+                )
                     continue;
                 if (show_steps_)
                 {
@@ -212,16 +200,16 @@ void debug()
 
 void generate_test()
 {
-    const std::filesystem::path path = "test_cases/finned_jellyfish.txt";
-    TestCaseFinder finder{path, 1000, false, true};
+    const std::filesystem::path path = "test_cases/test.txt";
+    TestCaseFinder finder{path, 10'000, true, true};
     finder.run();
 }
 
 void run_test()
 {
-    const std::filesystem::path path = "test_cases/naked_pair.txt";
+    const std::filesystem::path path = "test_cases/finned_swordfish.txt";
     Tester tester(path);
-    tester.test<NakedSubset>(2);
+    tester.test<Fish>(3, true);
 }
 
 int main()
