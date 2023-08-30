@@ -261,6 +261,14 @@ namespace sltd
             return *this;
         }
 
+        constexpr void swap(Bitset& other) noexcept
+        {
+            for (int i = 0; i < array_size; i++)
+                std::swap(data_[i], other.data_[i]);
+        }
+
+        constexpr friend void swap(Bitset& lhs, Bitset& rhs) noexcept { lhs.swap(rhs); }
+
         constexpr ElementType& get_element(const int i) noexcept { return data_[i]; }
         constexpr ElementType get_element(const int i) const noexcept { return data_[i]; }
 

@@ -254,7 +254,7 @@ namespace sltd
 
     std::string Fish::description() const
     {
-        return fmt::format("{}{}: Number {} in {}->{},{} [{}!={}]", //
+        return fmt::format("{}{}: number {} in {}->{},{} [{}!={}]", //
             fins.any() ? "Finned " : "", get_fish_name(std::popcount(base_sets)), //
             describe_candidates(candidate), //
             describe_houses(base_sets), describe_houses(cover_sets), //

@@ -7,17 +7,19 @@ Implementation of human-like sudoku solving strategies.
 - [x] single
 - [x] intersection
 - [x] pair
-- [x] x-wing
+- [x] X-wing
 - [x] triple
-- [x] finned (sashimi) x-wing
-- [x] xy-wing, w-wing
+- [x] finned (sashimi) X-wing
+- [x] XY-wing, XYZ-wing, W-wing
 - [x] (finned) swordfish
 - [x] quadruple
 - [x] (finned) jellyfish
-- [ ] x-chain, xy-chain
+- [x] simple colors
+- [ ] multi colors
+- [ ] X-chain, XY-chain
 - [ ] arbitrary chains
 - [ ] ALS
-- [ ] more insane fish
+- [ ] (finned) franken/mutant fish
 - [ ] kraken fish (fish w/ chain)
 - [ ] forcing chains, forcing nets
 - [x] brute force
