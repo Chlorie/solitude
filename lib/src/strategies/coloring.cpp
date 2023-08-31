@@ -15,13 +15,6 @@ namespace sltd
                 res |= peer_masks[i];
             return res;
         }
-
-        int get_first_set_bit_index(const PatternMask& pattern)
-        {
-            for (const int i : pattern.set_bit_indices())
-                return i;
-            return cell_count;
-        }
     } // namespace
 
     std::string RemotePair::description() const
@@ -127,8 +120,8 @@ namespace sltd
                     if (const auto weak_links = color_peers[i] & colors[i];
                         weak_links.any()) // This color sees itself (weakly linked)
                     {
-                        const int first_link = get_first_set_bit_index(weak_links);
-                        const int second_link = get_first_set_bit_index(peer_masks[first_link] & weak_links);
+                        const int first_link = countr_zero(weak_links);
+                        const int second_link = countr_zero(peer_masks[first_link] & weak_links);
                         return SimpleColors{
                             .colors = {colors[1 - i], colors[i]},
                             .eliminations = colors[i],

@@ -8,7 +8,7 @@ namespace sltd
 {
     std::string XYWing::description() const
     {
-        return fmt::format("XY-wing: {}->{},{}, [{}!={}]", //
+        return fmt::format("XY-Wing: {}->{},{}, [{}!={}]", //
             cell_name(pivot_idx), cell_name(pincer_idx[0]), cell_name(pincer_idx[1]), //
             describe_cells(eliminations), describe_candidates(candidate));
     }
@@ -57,7 +57,7 @@ namespace sltd
 
     std::string XYZWing::description() const
     {
-        return fmt::format("XYZ-wing: {}->{},{}, [{}!={}]", //
+        return fmt::format("XYZ-Wing: {}->{},{}, [{}!={}]", //
             cell_name(pivot_idx), cell_name(pincer_idx[0]), cell_name(pincer_idx[1]), //
             describe_cells(eliminations), describe_candidates(candidate));
     }
@@ -111,7 +111,7 @@ namespace sltd
 
     std::string WWing::description() const
     {
-        return fmt::format("W-wing: linked by {}, {}-{}={}-{}, [{}!={}]", //
+        return fmt::format("W-Wing: linked by {}, {}-{}={}-{}, [{}!={}]", //
             describe_candidates(link_number), //
             cell_name(ends[0]), cell_name(link[0]), cell_name(link[1]), cell_name(ends[1]), //
             describe_cells(eliminations), describe_candidates(candidate));

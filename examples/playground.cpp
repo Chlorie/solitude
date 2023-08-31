@@ -37,8 +37,8 @@ public:
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
             // current_ = Board::from_repr("5.3..76..9..1...2.........9.4.37.1.."
             //                             "79.2.1....5..6........1..7346............9..5");
-            // current_ = Board::from_repr("659...13...1.3.6252.3165.49.2..9631.36."
-            //                             "7..59.91.3.4.6279.6..2535.6...9811.2...476");
+            // current_ = Board::from_repr(
+            //     "3.452..8...6.9.....5..7.3.....689.23...734....631527...1.96......9.4..6.6.8217..5");
             current_solved_ = current_;
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
@@ -57,12 +57,14 @@ public:
                     solve_with<WWing>() || //
                     solve_with<Fish>(3, false) || // Swordfish
                     solve_with<Fish>(3, true) || // Finned Swordfish
+                    solve_with<XChain>(IntRange{.max = 3}) || // Turbot fish
                     solve_with<NakedSubset>(4) || //
                     solve_with<HiddenSubset>(4) || //
-                    solve_with_target<RemotePair>() || //
+                    solve_with<RemotePair>() || //
                     solve_with<SimpleColors>() || //
                     solve_with<Fish>(4, false) || // Jellyfish
-                    solve_with<Fish>(4, true) // Finned Jellyfish
+                    solve_with<Fish>(4, true) || // Finned Jellyfish
+                    solve_with<XChain>(IntRange{.min = 5}) //
                 )
                     continue;
                 if (show_steps_)
@@ -108,7 +110,7 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                if constexpr (std::is_same_v<Solver, RemotePair>)
+                if constexpr (std::is_same_v<Solver, XChain>)
                     //    if (std::pair{args...}.first >= 4)
                     (void)std::getchar();
             }
@@ -227,7 +229,7 @@ void generate_test() { TestCaseFinder("test_cases/test.txt", 5, false, true).run
 
 void run_test()
 {
-    // Tester("test_cases/test.txt").show_solutions<RemotePair>(); return;
+    // Tester("test_cases/test.txt").test<XChain>(IntRange{.min = 9, .max = 81}); return;
     Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
     Tester("test_cases/finned_swordfish.txt").test<Fish>(3, true);
     Tester("test_cases/finned_jellyfish.txt").test<Fish>(4, true);
@@ -240,8 +242,8 @@ int main()
 try
 {
     // debug();
-    // generate_test();
-    run_test();
+    generate_test();
+    // run_test();
 }
 catch (const std::exception& e)
 {

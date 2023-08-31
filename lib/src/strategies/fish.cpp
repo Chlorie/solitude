@@ -13,7 +13,7 @@ namespace sltd
         {
             switch (size)
             {
-                case 2: return "X-wing";
+                case 2: return "X-Wing";
                 case 3: return "Swordfish";
                 case 4: return "Jellyfish";
                 case 5: return "Squirmbag";

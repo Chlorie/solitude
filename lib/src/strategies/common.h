@@ -64,6 +64,7 @@ namespace sltd
 
     inline constexpr auto peer_masks = generate_peer_masks();
 
+    constexpr int countr_zero(const PatternMask& pattern) { return *pattern.set_bit_indices().begin(); }
     PatternMask nvalue_cells(const Board& board, int n);
 
     template <int Size>
