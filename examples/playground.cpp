@@ -59,7 +59,8 @@ public:
                     solve_with<Fish>(3, true) || // Finned Swordfish
                     solve_with<NakedSubset>(4) || //
                     solve_with<HiddenSubset>(4) || //
-                    solve_with_target<SimpleColors>() || //
+                    solve_with_target<RemotePair>() || //
+                    solve_with<SimpleColors>() || //
                     solve_with<Fish>(4, false) || // Jellyfish
                     solve_with<Fish>(4, true) // Finned Jellyfish
                 )
@@ -107,7 +108,7 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                if constexpr (std::is_same_v<Solver, SimpleColors>)
+                if constexpr (std::is_same_v<Solver, RemotePair>)
                     //    if (std::pair{args...}.first >= 4)
                     (void)std::getchar();
             }
@@ -187,6 +188,7 @@ public:
     template <typename Solver, typename... Args>
     void show_solutions(Args&&... args)
     {
+        fmt::print("\x1b[H\x1b[0J");
         for (const auto& board : boards_)
             if (const auto opt = Solver::try_find(board, args...); opt)
             {
@@ -221,11 +223,11 @@ void debug()
         fmt::println("Didn't find anything");
 }
 
-void generate_test() { TestCaseFinder("test_cases/test.txt", 100, true, true).run(); }
+void generate_test() { TestCaseFinder("test_cases/test.txt", 5, false, true).run(); }
 
 void run_test()
 {
-    // Tester("test_cases/test.txt").show_solutions<SimpleColors>(); return;
+    // Tester("test_cases/test.txt").show_solutions<RemotePair>(); return;
     Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
     Tester("test_cases/finned_swordfish.txt").test<Fish>(3, true);
     Tester("test_cases/finned_jellyfish.txt").test<Fish>(4, true);
@@ -238,8 +240,8 @@ int main()
 try
 {
     // debug();
-    generate_test();
-    // run_test();
+    // generate_test();
+    run_test();
 }
 catch (const std::exception& e)
 {

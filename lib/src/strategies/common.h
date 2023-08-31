@@ -3,6 +3,7 @@
 #include <array>
 
 #include "solitude/board.h"
+#include "solitude/utils.h"
 
 namespace sltd
 {
@@ -62,6 +63,17 @@ namespace sltd
     }
 
     inline constexpr auto peer_masks = generate_peer_masks();
+
+    PatternMask nvalue_cells(const Board& board, int n);
+
+    template <int Size>
+    std::array<int, Size> candidate_mask_to_array(const CandidateMask candidates)
+    {
+        std::array<int, Size> res{};
+        for (int i = 0; const int idx : set_bit_indices(candidates))
+            res[i++] = idx;
+        return res;
+    }
 
     std::string cell_name(int idx);
     std::string house_name(int idx);

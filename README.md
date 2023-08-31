@@ -15,7 +15,7 @@ Implementation of human-like sudoku solving strategies.
 - [x] quadruple
 - [x] (finned) jellyfish
 - [x] simple colors
-- [ ] multi colors
+- [x] remote pair
 - [ ] X-chain, XY-chain
 - [ ] arbitrary chains
 - [ ] ALS

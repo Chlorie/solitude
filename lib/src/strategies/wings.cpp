@@ -3,31 +3,9 @@
 #include <fmt/format.h>
 
 #include "common.h"
-#include "solitude/utils.h"
 
 namespace sltd
 {
-    namespace
-    {
-        PatternMask nvalue_cells(const Board& board, const int n)
-        {
-            PatternMask res;
-            for (int i = 0; i < cell_count; i++)
-                if (std::popcount(board.cells[i]) == n)
-                    res.set(i);
-            return res;
-        }
-
-        template <int Size>
-        std::array<int, Size> candidate_mask_to_array(const CandidateMask candidates)
-        {
-            std::array<int, Size> res{};
-            for (int i = 0; const int idx : set_bit_indices(candidates))
-                res[i++] = idx;
-            return res;
-        }
-    } // namespace
-
     std::string XYWing::description() const
     {
         return fmt::format("XY-wing: {}->{},{}, [{}!={}]", //

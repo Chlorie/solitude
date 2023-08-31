@@ -8,6 +8,20 @@ SOLITUDE_SUPPRESS_EXPORT_WARNING
 
 namespace sltd
 {
+    // A remote pair can be replicated by two simple color traps
+    struct SOLITUDE_API RemotePair
+    {
+        static constexpr std::string_view name = "Remote Pair";
+
+        PatternMask groups[2];
+        PatternMask eliminations;
+        CandidateMask candidates = 0;
+
+        std::string description() const;
+        static std::optional<RemotePair> try_find(const Board& board);
+        void apply_to(Board& board) const;
+    };
+
     enum class SimpleColorType
     {
         trap,

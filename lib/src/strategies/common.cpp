@@ -39,6 +39,15 @@ namespace sltd
         return extract_patterns(board, number, 2 * board_size);
     }
 
+    PatternMask nvalue_cells(const Board& board, const int n)
+    {
+        PatternMask res;
+        for (int i = 0; i < cell_count; i++)
+            if (std::popcount(board.cells[i]) == n)
+                res.set(i);
+        return res;
+    }
+
     std::string cell_name(const int idx)
     {
         return fmt::format("r{}c{}", //
