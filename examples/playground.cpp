@@ -37,8 +37,10 @@ public:
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
             // current_ = Board::from_repr("5.3..76..9..1...2.........9.4.37.1.."
             //                             "79.2.1....5..6........1..7346............9..5");
-            // current_ = Board::from_repr(
-            //     "3.452..8...6.9.....5..7.3.....689.23...734....631527...1.96......9.4..6.6.8217..5");
+            // current_ = Board::from_full_repr(
+            //     "67(458)93(158)(1245)(12458)(145)1(345)9(4568)2(568)(456)(3458)7(358)2(458)(45678)(457)(15678)(1456)("
+            //     "13458)9(45)63(457)9(57)(12)(12)89813(45)27(45)62(45)7(68)1(68)39(45)(34578)(1345)(2458)(1257)(57)9("
+            //     "1458)6(145)(457)(145)6(157)839(145)2(58)9(258)(125)64(158)73");
             current_solved_ = current_;
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
@@ -58,13 +60,15 @@ public:
                     solve_with<Fish>(3, false) || // Swordfish
                     solve_with<Fish>(3, true) || // Finned Swordfish
                     solve_with<XChain>(IntRange{.max = 3}) || // Turbot fish
+                    solve_with<XYChain>(IntRange{.max = 3}) || //
                     solve_with<NakedSubset>(4) || //
                     solve_with<HiddenSubset>(4) || //
                     solve_with<RemotePair>() || //
                     solve_with<SimpleColors>() || //
                     solve_with<Fish>(4, false) || // Jellyfish
                     solve_with<Fish>(4, true) || // Finned Jellyfish
-                    solve_with<XChain>(IntRange{.min = 5}) //
+                    solve_with<XChain>(IntRange{.min = 5}) || //
+                    solve_with<XYChain>(IntRange{.min = 4}) //
                 )
                     continue;
                 if (show_steps_)
@@ -110,7 +114,7 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                if constexpr (std::is_same_v<Solver, XChain>)
+                if constexpr (std::is_same_v<Solver, XYChain>)
                     //    if (std::pair{args...}.first >= 4)
                     (void)std::getchar();
             }

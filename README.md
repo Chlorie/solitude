@@ -16,7 +16,7 @@ Implementation of human-like sudoku solving strategies.
 - [x] (finned) jellyfish
 - [x] remote pair
 - [x] simple colors
-- [ ] X-chain, XY-chain
+- [x] X-chain, XY-chain
 - [ ] arbitrary chains
 - [ ] ALS
 - [ ] (finned) franken/mutant fish

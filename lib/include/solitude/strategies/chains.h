@@ -27,6 +27,19 @@ namespace sltd
         static std::optional<XChain> try_find(const Board& board, IntRange length);
         void apply_to(Board& board) const;
     };
+
+    struct SOLITUDE_API XYChain
+    {
+        static constexpr std::string_view name = "XY-Chain";
+
+        std::vector<int> node_idx;
+        PatternMask eliminations;
+        CandidateMask candidate = 0;
+
+        std::string description() const;
+        static std::optional<XYChain> try_find(const Board& board, IntRange length);
+        void apply_to(Board& board) const;
+    };
 } // namespace sltd
 
 SOLITUDE_RESTORE_EXPORT_WARNING
