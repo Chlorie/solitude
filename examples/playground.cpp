@@ -35,8 +35,8 @@ public:
         while (case_count_ < target_)
         {
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
-            // current_ = Board::from_repr("5.3..76..9..1...2.........9.4.37.1.."
-            //                             "79.2.1....5..6........1..7346............9..5");
+            current_ =
+                Board::from_repr("156...378.4.1.7.2..........9.4...6.7...9.4......765....126.349..3.5.1.6.....4....");
             // current_ = Board::from_full_repr(
             //     "67(458)93(158)(1245)(12458)(145)1(345)9(4568)2(568)(456)(3458)7(358)2(458)(45678)(457)(15678)(1456)("
             //     "13458)9(45)63(457)9(57)(12)(12)89813(45)27(45)62(45)7(68)1(68)39(45)(34578)(1345)(2458)(1257)(57)9("
@@ -114,9 +114,9 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                if constexpr (std::is_same_v<Solver, XYChain>)
-                    //    if (std::pair{args...}.first >= 4)
-                    (void)std::getchar();
+                // if constexpr (std::is_same_v<Solver, XYChain>)
+                //    if (std::pair{args...}.first >= 4)
+                (void)std::getchar();
             }
             if (check_solver_correctness_)
             {
@@ -229,7 +229,7 @@ void debug()
         fmt::println("Didn't find anything");
 }
 
-void generate_test() { TestCaseFinder("test_cases/test.txt", 5, false, true).run(); }
+void generate_test() { TestCaseFinder("test_cases/test.txt", 5, true, true).run(); }
 
 void run_test()
 {
