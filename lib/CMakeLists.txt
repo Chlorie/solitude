@@ -23,6 +23,8 @@ target_add_sources(solitude "include/solitude/"
     "strategies/fish.h"
     "strategies/intersection.h"
     "strategies/subsets.h"
+    "strategies/sue_de_coq.h"
+    "strategies/uniqueness.h"
     "strategies/wings.h"
 )
 
@@ -38,6 +40,8 @@ target_add_sources(solitude "src/"
     "strategies/fish.cpp"
     "strategies/intersection.cpp"
     "strategies/subsets.cpp"
+    "strategies/sue_de_coq.cpp"
+    "strategies/uniqueness.cpp"
     "strategies/wings.cpp"
 )
 

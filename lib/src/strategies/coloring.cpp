@@ -30,7 +30,7 @@ namespace sltd
         for (auto uncolored = nvalue_cells(board, 2); //
              const int initiating : uncolored.set_bit_indices())
         {
-            const auto [x, y] = candidate_mask_to_array<2>(board.cells[initiating]);
+            const auto [x, y] = bitmask_to_array<2>(board.cells[initiating]);
             auto uncolored_same_bivalues = uncolored & patterns[x] & patterns[y];
             PatternMask colors[2], prev;
             prev.set(initiating);

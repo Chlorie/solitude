@@ -22,7 +22,7 @@ namespace sltd
             const auto bivalue_peers = peer_masks[pivot] & bivalue;
             if (bivalue_peers.count() < 2) // We need at least two pincers
                 continue;
-            const auto [x, y] = candidate_mask_to_array<2>(board.cells[pivot]);
+            const auto [x, y] = bitmask_to_array<2>(board.cells[pivot]);
             const CandidateMask not_xy = ~board.cells[pivot];
             // Ensure that z is not x or y
             const auto xz_pattern = bivalue_peers & patterns[x] & ~patterns[y];
@@ -123,7 +123,7 @@ namespace sltd
         for (const auto bivalue = nvalue_cells(board, 2); //
              const int first_end : bivalue.set_bit_indices())
         {
-            const auto pair = candidate_mask_to_array<2>(board.cells[first_end]);
+            const auto pair = bitmask_to_array<2>(board.cells[first_end]);
             // The other end should have the same candidates as the first one,
             // and the two should not see each other (or it would just be a naked pair)
             for (const auto second_end_pattern =

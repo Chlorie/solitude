@@ -1,6 +1,6 @@
 # Solitude
 
-Implementation of human-like sudoku solving strategies.
+Implementation of human-like sudoku-solving strategies.
 
 ## List of Sudoku solving techniques
 
@@ -17,7 +17,9 @@ Implementation of human-like sudoku solving strategies.
 - [x] remote pair
 - [x] simple colors
 - [x] X-chain, XY-chain
-- [ ] arbitrary chains
+- [ ] chains
+- [ ] Sue de Coq
+- [ ] uniqueness testing
 - [ ] ALS
 - [ ] (finned) franken/mutant fish
 - [ ] kraken fish (fish w/ chain)

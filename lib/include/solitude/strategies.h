@@ -5,4 +5,5 @@
 #include "strategies/fish.h"
 #include "strategies/intersection.h"
 #include "strategies/subsets.h"
+#include "strategies/sue_de_coq.h"
 #include "strategies/wings.h"

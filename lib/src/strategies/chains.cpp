@@ -124,7 +124,7 @@ namespace sltd
                 for (const int initiating : bivalue_.set_bit_indices())
                 {
                     not_in_chain_ = bivalue_;
-                    for (const auto candidates = candidate_mask_to_array<2>(board_.cells[initiating]);
+                    for (const auto candidates = bitmask_to_array<2>(board_.cells[initiating]);
                          const int set_candidate : candidates)
                     {
                         const int eliminated_candidate = candidates[0] + candidates[1] - set_candidate;
@@ -200,6 +200,22 @@ namespace sltd
                 });
             }
         };
+
+        class ChainFinder
+        {
+        public:
+            ChainFinder(const Board& board, const int length): board_(board), length_(length) {}
+
+            std::optional<Chain> try_find()
+            {
+
+                return std::nullopt;
+            }
+
+        private:
+            Board board_;
+            int length_ = 0;
+        };
     } // namespace
 
     std::string XChain::description() const
@@ -269,5 +285,26 @@ namespace sltd
     {
         for (const int i : eliminations.set_bit_indices())
             board.cells[i] &= ~candidate;
+    }
+
+    std::string Chain::description() const
+    {
+        return "TODO"; // TODO
+    }
+
+    std::optional<Chain> Chain::try_find(const Board& board, IntRange length, const bool allow_grouped_nodes)
+    {
+        length.min = std::max(length.min, 3);
+        for (int len = length.min; len <= length.max; len++)
+            if (auto opt = ChainFinder(board, len).try_find())
+                return opt;
+        return std::nullopt;
+    }
+
+    void Chain::apply_to(Board& board) const
+    {
+        for (int i = 0; i < board_size; i++)
+            for (const int j : eliminations[i].set_bit_indices())
+                board.cells[j] &= ~(1 << i);
     }
 } // namespace sltd

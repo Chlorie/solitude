@@ -204,9 +204,9 @@ namespace sltd
             return *this;
         }
 
-        constexpr Bitset operator<<(const int x) noexcept { return Bitset(*this) <<= x; }
+        constexpr Bitset operator<<(const int x) const noexcept { return Bitset(*this) <<= x; }
 
-        constexpr Bitset operator>>(const int x) noexcept { return Bitset(*this) >>= x; }
+        constexpr Bitset operator>>(const int x) const noexcept { return Bitset(*this) >>= x; }
 
         constexpr friend Bitset operator&(const Bitset& lhs, const Bitset& rhs) noexcept { return Bitset(lhs) &= rhs; }
         constexpr friend Bitset operator|(const Bitset& lhs, const Bitset& rhs) noexcept { return Bitset(lhs) |= rhs; }

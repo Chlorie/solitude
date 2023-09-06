@@ -7,6 +7,34 @@
 
 namespace sltd
 {
+    constexpr PatternMask get_first_column_mask()
+    {
+        PatternMask res;
+        for (int i = 0; i < board_size; i++)
+            res.set(i * board_size);
+        return res;
+    }
+
+    constexpr PatternMask get_first_box_mask()
+    {
+        PatternMask res;
+        for (int i = 0; i < box_width; i++)
+            for (int j = 0; j < box_height; j++)
+                res.set(i * board_size + j);
+        return res;
+    }
+
+    constexpr PatternMask first_row = PatternMask(full_mask);
+    constexpr PatternMask first_column = get_first_column_mask();
+    constexpr PatternMask first_box = get_first_box_mask();
+
+    constexpr PatternMask nth_row(const int i) { return first_row << (i * board_size); }
+    constexpr PatternMask nth_column(const int i) { return first_column << i; }
+    constexpr PatternMask nth_box(const int i)
+    {
+        return first_box << (i % box_height * box_width + i / box_height * box_height * board_size);
+    }
+
     constexpr auto generate_house_indices()
     {
         // 3 * board_size for rows, columns, and boxes
@@ -67,11 +95,21 @@ namespace sltd
     constexpr int countr_zero(const PatternMask& pattern) { return *pattern.set_bit_indices().begin(); }
     PatternMask nvalue_cells(const Board& board, int n);
 
-    template <int Size>
-    std::array<int, Size> candidate_mask_to_array(const CandidateMask candidates)
+    template <int Size, typename T>
+        requires std::is_unsigned_v<T>
+    std::array<int, Size> bitmask_to_array(const T bits)
     {
         std::array<int, Size> res{};
-        for (int i = 0; const int idx : set_bit_indices(candidates))
+        for (int i = 0; const int idx : sltd::set_bit_indices(bits))
+            res[i++] = idx;
+        return res;
+    }
+
+    template <int Size, int MaskSize>
+    std::array<int, Size> bitmask_to_array(const Bitset<MaskSize>& bits)
+    {
+        std::array<int, Size> res{};
+        for (int i = 0; const int idx : bits.set_bit_indices())
             res[i++] = idx;
         return res;
     }

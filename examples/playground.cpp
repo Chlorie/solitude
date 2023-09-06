@@ -35,12 +35,12 @@ public:
         while (case_count_ < target_)
         {
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
-            current_ =
-                Board::from_repr("156...378.4.1.7.2..........9.4...6.7...9.4......765....126.349..3.5.1.6.....4....");
+            // current_ =
+            //     Board::from_repr("...86...7....752..3..2...8..57....42..2...3..63....85..9...2..6..351....4...96...");
             // current_ = Board::from_full_repr(
-            //     "67(458)93(158)(1245)(12458)(145)1(345)9(4568)2(568)(456)(3458)7(358)2(458)(45678)(457)(15678)(1456)("
-            //     "13458)9(45)63(457)9(57)(12)(12)89813(45)27(45)62(45)7(68)1(68)39(45)(34578)(1345)(2458)(1257)(57)9("
-            //     "1458)6(145)(457)(145)6(157)839(145)2(58)9(258)(125)64(158)73");
+            //     "(1236)4(1368)5(168)79(68)(28)(2569)7(68)3(4689)(489)1(568)(2458)(1569)(15)(168)(4689)(14689)273(458)"
+            //     "89(367)(467)(23)(45)(25)1(57)(16)25(6789)(6789)(189)34(78)4(13)(137)(78)(23)(158)(258)96(357)621("
+            //     "45789)(489)(458)(58)(39)(157)(158)4(789)(5789)362(19)(135)(1358)92(458)6(458)7(13)");
             current_solved_ = current_;
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
@@ -67,8 +67,12 @@ public:
                     solve_with<SimpleColors>() || //
                     solve_with<Fish>(4, false) || // Jellyfish
                     solve_with<Fish>(4, true) || // Finned Jellyfish
-                    solve_with<XChain>(IntRange{.min = 5}) || //
-                    solve_with<XYChain>(IntRange{.min = 4}) //
+                    solve_with<XChain>(IntRange{.min = 5, .max = 5}) || //
+                    solve_with<XYChain>(IntRange{.min = 4, .max = 5}) || //
+                    solve_with<SueDeCoq>(false) || // Basic SdC
+                    solve_with<SueDeCoq>(true) || // Extended SdC
+                    solve_with<XChain>(IntRange{.min = 7}) || //
+                    solve_with<XYChain>(IntRange{.min = 6}) //
                 )
                     continue;
                 if (show_steps_)
@@ -114,9 +118,9 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                // if constexpr (std::is_same_v<Solver, XYChain>)
-                //    if (std::pair{args...}.first >= 4)
-                (void)std::getchar();
+                if constexpr (std::is_same_v<Solver, SueDeCoq>)
+                    //    if (std::pair{args...}.first >= 4)
+                    (void)std::getchar();
             }
             if (check_solver_correctness_)
             {
@@ -229,7 +233,7 @@ void debug()
         fmt::println("Didn't find anything");
 }
 
-void generate_test() { TestCaseFinder("test_cases/test.txt", 5, true, true).run(); }
+void generate_test() { TestCaseFinder("test_cases/test.txt", 1'000, true, true).run(); }
 
 void run_test()
 {
@@ -237,9 +241,11 @@ void run_test()
     Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
     Tester("test_cases/finned_swordfish.txt").test<Fish>(3, true);
     Tester("test_cases/finned_jellyfish.txt").test<Fish>(4, true);
+    Tester("test_cases/turbot_fish.txt").test<XChain>(IntRange{.max = 3});
     Tester("test_cases/xy_wing.txt").test<XYWing>();
     Tester("test_cases/xyz_wing.txt").test<XYZWing>();
     Tester("test_cases/w_wing.txt").test<WWing>();
+    Tester("test_cases/basic_sue_de_coq.txt").test<SueDeCoq>(false);
 }
 
 int main()
