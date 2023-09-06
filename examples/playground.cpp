@@ -37,10 +37,10 @@ public:
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
             // current_ =
             //     Board::from_repr("...86...7....752..3..2...8..57....42..2...3..63....85..9...2..6..351....4...96...");
-            // current_ = Board::from_full_repr(
-            //     "(1236)4(1368)5(168)79(68)(28)(2569)7(68)3(4689)(489)1(568)(2458)(1569)(15)(168)(4689)(14689)273(458)"
-            //     "89(367)(467)(23)(45)(25)1(57)(16)25(6789)(6789)(189)34(78)4(13)(137)(78)(23)(158)(258)96(357)621("
-            //     "45789)(489)(458)(58)(39)(157)(158)4(789)(5789)362(19)(135)(1358)92(458)6(458)7(13)");
+            // current_ =
+            //     Board::from_full_repr("3248615976579438219185273642(6789)143(589)(79)(578)(5689)5(789)32(18)6(1479)("
+            //                           "478)(89)4(689)(69)7(158)(589)(129)(358)(235689)1(349)(259)6(58)(258)(2479)("
+            //                           "34578)(23589)8(39)(259)1746(35)(2359)7(46)(256)39(258)(24)1(258)");
             current_solved_ = current_;
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
@@ -70,7 +70,7 @@ public:
                     solve_with<XChain>(IntRange{.min = 5, .max = 5}) || //
                     solve_with<XYChain>(IntRange{.min = 4, .max = 5}) || //
                     solve_with<SueDeCoq>(false) || // Basic SdC
-                    solve_with<SueDeCoq>(true) || // Extended SdC
+                    solve_with_target<SueDeCoq>(true) || // Extended SdC
                     solve_with<XChain>(IntRange{.min = 7}) || //
                     solve_with<XYChain>(IntRange{.min = 6}) //
                 )
@@ -233,11 +233,11 @@ void debug()
         fmt::println("Didn't find anything");
 }
 
-void generate_test() { TestCaseFinder("test_cases/test.txt", 1'000, true, true).run(); }
+void generate_test() { TestCaseFinder("test_cases/test.txt", 1'000, false, true).run(); }
 
 void run_test()
 {
-    // Tester("test_cases/test.txt").test<XChain>(IntRange{.min = 9, .max = 81}); return;
+    // Tester("test_cases/extended_sue_de_coq.txt").show_solutions<SueDeCoq>(true); return;
     Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
     Tester("test_cases/finned_swordfish.txt").test<Fish>(3, true);
     Tester("test_cases/finned_jellyfish.txt").test<Fish>(4, true);
@@ -246,14 +246,15 @@ void run_test()
     Tester("test_cases/xyz_wing.txt").test<XYZWing>();
     Tester("test_cases/w_wing.txt").test<WWing>();
     Tester("test_cases/basic_sue_de_coq.txt").test<SueDeCoq>(false);
+    Tester("test_cases/extended_sue_de_coq.txt").test<SueDeCoq>(true);
 }
 
 int main()
 try
 {
     // debug();
-    generate_test();
-    // run_test();
+    // generate_test();
+    run_test();
 }
 catch (const std::exception& e)
 {
