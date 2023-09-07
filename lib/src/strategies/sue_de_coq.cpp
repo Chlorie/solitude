@@ -59,14 +59,6 @@ namespace sltd
 
         constexpr auto all_intersections = generate_intersection_masks();
 
-        constexpr PatternMask pattern_from_indices_and_bits(const int* idx, const CandidateMask mask)
-        {
-            PatternMask res;
-            for (const int i : set_bit_indices(mask))
-                res.set(idx[i]);
-            return res;
-        }
-
         PatternMask find_eliminations(const Board& board, PatternMask unfiltered, const CandidateMask candidates)
         {
             for (const int i : unfiltered.set_bit_indices())

@@ -37,10 +37,10 @@ public:
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
             // current_ =
             //     Board::from_repr("...86...7....752..3..2...8..57....42..2...3..63....85..9...2..6..351....4...96...");
-            // current_ =
-            //     Board::from_full_repr("3248615976579438219185273642(6789)143(589)(79)(578)(5689)5(789)32(18)6(1479)("
-            //                           "478)(89)4(689)(69)7(158)(589)(129)(358)(235689)1(349)(259)6(58)(258)(2479)("
-            //                           "34578)(23589)8(39)(259)1746(35)(2359)7(46)(256)39(258)(24)1(258)");
+            // current_ = Board::from_full_repr(
+            //     "8(156)(146)(15)732(1459)(1459)(147)(157)(1247)9(28)(158)63(145)(139)(159)(123)(125)64(15)782(179)(147)"
+            //     "3(49)(15)86(1459)(1469)(169)5(126)(28)(18)7(149)3(16)38(156)(49)7(49)(15)2(137)2(137)456(39)8(179)("
+            //     "1567)4(167)839(15)2(157)(35)89712(34)(45)6");
             current_solved_ = current_;
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
@@ -70,10 +70,10 @@ public:
                     solve_with<XChain>(IntRange{.min = 5, .max = 5}) || //
                     solve_with<XYChain>(IntRange{.min = 4, .max = 5}) || //
                     solve_with<SueDeCoq>(false) || // Basic SdC
-                    solve_with_target<SueDeCoq>(true) || // Extended SdC
                     solve_with<XChain>(IntRange{.min = 7}) || //
-                    solve_with<XYChain>(IntRange{.min = 6}) //
-                )
+                    solve_with<XYChain>(IntRange{.min = 6}) || //
+                    solve_with<SueDeCoq>(true) || // Extended SdC
+                    solve_with_target<AlsXZ>())
                     continue;
                 if (show_steps_)
                 {
@@ -118,7 +118,7 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                if constexpr (std::is_same_v<Solver, SueDeCoq>)
+                if constexpr (std::is_same_v<Solver, AlsXZ>)
                     //    if (std::pair{args...}.first >= 4)
                     (void)std::getchar();
             }
@@ -130,8 +130,8 @@ private:
                     if (const auto solution = current_solved_.cells[i]; //
                         (solution & current_.cells[i]) != solution)
                     {
-                        fmt::println("The solver is faulty\nSolver name: {}\nBoard state: {}", //
-                            Solver::name, before_apply.full_repr());
+                        fmt::println("The solver is faulty\nSolver name: {}\nBoard state: {}\nAttempted step: {}\n", //
+                            Solver::name, before_apply.full_repr(), opt->description());
                         throw std::runtime_error("The solver is faulty");
                     }
             }
@@ -233,7 +233,7 @@ void debug()
         fmt::println("Didn't find anything");
 }
 
-void generate_test() { TestCaseFinder("test_cases/test.txt", 1'000, false, true).run(); }
+void generate_test() { TestCaseFinder("test_cases/test.txt", 10'000, false, true).run(); }
 
 void run_test()
 {
@@ -247,6 +247,7 @@ void run_test()
     Tester("test_cases/w_wing.txt").test<WWing>();
     Tester("test_cases/basic_sue_de_coq.txt").test<SueDeCoq>(false);
     Tester("test_cases/extended_sue_de_coq.txt").test<SueDeCoq>(true);
+    Tester("test_cases/als_xz.txt").test<AlsXZ>();
 }
 
 int main()

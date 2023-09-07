@@ -24,9 +24,9 @@ namespace sltd
         return res;
     }
 
-    constexpr PatternMask first_row = PatternMask(full_mask);
-    constexpr PatternMask first_column = get_first_column_mask();
-    constexpr PatternMask first_box = get_first_box_mask();
+    inline constexpr PatternMask first_row = PatternMask(full_mask);
+    inline constexpr PatternMask first_column = get_first_column_mask();
+    inline constexpr PatternMask first_box = get_first_box_mask();
 
     constexpr PatternMask nth_row(const int i) { return first_row << (i * board_size); }
     constexpr PatternMask nth_column(const int i) { return first_column << i; }
@@ -34,6 +34,20 @@ namespace sltd
     {
         return first_box << (i % box_height * box_width + i / box_height * box_height * board_size);
     }
+
+    constexpr auto generate_house_patterns()
+    {
+        std::array<PatternMask, 3 * board_size> res; // NOLINT
+        for (int i = 0; i < board_size; i++)
+        {
+            res[i] = nth_row(i);
+            res[i + board_size] = nth_column(i);
+            res[i + 2 * board_size] = nth_box(i);
+        }
+        return res;
+    }
+
+    inline constexpr auto house_patterns = generate_house_patterns();
 
     constexpr auto generate_house_indices()
     {
@@ -111,6 +125,14 @@ namespace sltd
         std::array<int, Size> res{};
         for (int i = 0; const int idx : bits.set_bit_indices())
             res[i++] = idx;
+        return res;
+    }
+
+    constexpr PatternMask pattern_from_indices_and_bits(const int* idx, const CandidateMask mask)
+    {
+        PatternMask res;
+        for (const int i : set_bit_indices(mask))
+            res.set(idx[i]);
         return res;
     }
 

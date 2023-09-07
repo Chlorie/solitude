@@ -1,5 +1,6 @@
 #pragma once
 
+#include "strategies/als.h"
 #include "strategies/chains.h"
 #include "strategies/coloring.h"
 #include "strategies/fish.h"

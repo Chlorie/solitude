@@ -212,6 +212,14 @@ namespace sltd
         constexpr friend Bitset operator|(const Bitset& lhs, const Bitset& rhs) noexcept { return Bitset(lhs) |= rhs; }
         constexpr friend Bitset operator^(const Bitset& lhs, const Bitset& rhs) noexcept { return Bitset(lhs) ^= rhs; }
 
+        constexpr bool contains(const Bitset& other) const noexcept
+        {
+            for (int i = 0; i < array_size; i++)
+                if ((data_[i] & other.data_[i]) != other.data_[i])
+                    return false;
+            return true;
+        }
+
         constexpr Bitset& set() noexcept
         {
             if (std::is_constant_evaluated())

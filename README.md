@@ -20,7 +20,9 @@ Implementation of human-like sudoku-solving strategies.
 - [ ] chains
 - [x] Sue de Coq
 - [ ] uniqueness testing
-- [ ] ALS
+- [ ] ALS-XZ, ALS-XY-wing
+- [ ] ALS chain
+- [ ] death blossom
 - [ ] (finned) franken/mutant fish
 - [ ] kraken fish (fish w/ chain)
 - [ ] forcing chains, forcing nets
