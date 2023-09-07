@@ -18,7 +18,7 @@ Implementation of human-like sudoku-solving strategies.
 - [x] simple colors
 - [x] X-chain, XY-chain
 - [ ] chains
-- [ ] Sue de Coq
+- [x] Sue de Coq
 - [ ] uniqueness testing
 - [ ] ALS
 - [ ] (finned) franken/mutant fish

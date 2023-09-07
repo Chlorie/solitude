@@ -93,8 +93,6 @@ namespace sltd
                     const auto cell_idx = bitmask_to_array<box_width>(not_filled);
                     for (CandidateMask common_set = 0b11; common_set < max_idx_mask; common_set++)
                     {
-                        if (common_set == 7)
-                            continue;
                         const auto common_set_size = std::popcount(common_set);
                         if (common_set_size < 2) // We need at least 2 cells in the intersection
                             continue;
