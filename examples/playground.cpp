@@ -238,15 +238,15 @@ void generate_test() { TestCaseFinder("test_cases/test.txt", 10'000, false, true
 void run_test()
 {
     // Tester("test_cases/extended_sue_de_coq.txt").show_solutions<SueDeCoq>(true); return;
-    Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
-    Tester("test_cases/finned_swordfish.txt").test<Fish>(3, true);
-    Tester("test_cases/finned_jellyfish.txt").test<Fish>(4, true);
-    Tester("test_cases/turbot_fish.txt").test<XChain>(IntRange{.max = 3});
-    Tester("test_cases/xy_wing.txt").test<XYWing>();
-    Tester("test_cases/xyz_wing.txt").test<XYZWing>();
-    Tester("test_cases/w_wing.txt").test<WWing>();
-    Tester("test_cases/basic_sue_de_coq.txt").test<SueDeCoq>(false);
-    Tester("test_cases/extended_sue_de_coq.txt").test<SueDeCoq>(true);
+    // Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
+    // Tester("test_cases/finned_swordfish.txt").test<Fish>(3, true);
+    // Tester("test_cases/finned_jellyfish.txt").test<Fish>(4, true);
+    // Tester("test_cases/turbot_fish.txt").test<XChain>(IntRange{.max = 3});
+    // Tester("test_cases/xy_wing.txt").test<XYWing>();
+    // Tester("test_cases/xyz_wing.txt").test<XYZWing>();
+    // Tester("test_cases/w_wing.txt").test<WWing>();
+    // Tester("test_cases/basic_sue_de_coq.txt").test<SueDeCoq>(false);
+    // Tester("test_cases/extended_sue_de_coq.txt").test<SueDeCoq>(true);
     Tester("test_cases/als_xz.txt").test<AlsXZ>();
 }
 

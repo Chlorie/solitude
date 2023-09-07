@@ -14,6 +14,7 @@ namespace sltd
         {
             PatternMask cells;
             CandidateMask candidates = 0;
+            PatternMask common_peers[board_size];
         };
 
         auto find_unfilled_cells_in_house(const Board& board, const int house)
@@ -25,8 +26,18 @@ namespace sltd
             return res;
         }
 
+        PatternMask find_common_peers_in_pattern(const PatternMask& pattern)
+        {
+            static constexpr auto full_pattern = PatternMask{}.set();
+            auto res = full_pattern;
+            for (const int i : pattern.set_bit_indices())
+                res &= peer_masks[i];
+            return res;
+        }
+
         std::vector<Als> find_all_als(const Board& board)
         {
+            const auto patterns = board.all_number_patterns();
             std::vector<Als> res;
             std::vector<CandidateMask> candidate_cache;
             candidate_cache.resize(1 << board_size);
@@ -43,10 +54,13 @@ namespace sltd
                         const CandidateMask candidates = msb_candidates | candidate_cache[j - msb];
                         candidate_cache[j] = candidates;
                         if (std::popcount(candidates) - std::popcount(j) == 1) // Found an ALS
-                            res.push_back({
-                                .cells = pattern_from_indices_and_bits(unfilled.data(), j),
-                                .candidates = candidates //
-                            });
+                        {
+                            Als& als = res.emplace_back();
+                            als.cells = pattern_from_indices_and_bits(unfilled.data(), j);
+                            als.candidates = candidates;
+                            for (int k = 0; k < board_size; k++)
+                                als.common_peers[k] = find_common_peers_in_pattern(als.cells & patterns[k]);
+                        }
                     }
                 }
             }
@@ -60,14 +74,6 @@ namespace sltd
             CandidateMask res = 0;
             for (const int i : pattern.set_bit_indices())
                 res |= board.cells[i];
-            return res;
-        }
-
-        PatternMask find_common_peers_in_pattern(const PatternMask& pattern)
-        {
-            PatternMask res = PatternMask{}.flip();
-            for (const int i : pattern.set_bit_indices())
-                res &= peer_masks[i];
             return res;
         }
     } // namespace
@@ -106,10 +112,9 @@ namespace sltd
                 {
                     const auto first_rcc = als[i].cells & patterns[rcc];
                     const auto second_rcc = als[j].cells & patterns[rcc];
-                    const auto first_peers = find_common_peers_in_pattern(first_rcc);
-                    const auto second_peers = find_common_peers_in_pattern(second_rcc);
                     // All the RCC cells must see each other
-                    if (!first_peers.contains(second_rcc) || !second_peers.contains(first_rcc))
+                    if (!als[i].common_peers[rcc].contains(second_rcc) || //
+                        !als[j].common_peers[rcc].contains(first_rcc))
                         continue;
                     // Find all eliminations
                     const CandidateMask eliminated_candidates = common ^ (1 << rcc);
@@ -121,9 +126,8 @@ namespace sltd
                     PatternMask all_eliminations;
                     for (const int ec : set_bit_indices(eliminated_candidates))
                     {
-                        const auto all_ec = (als[i].cells | als[j].cells) & patterns[ec];
-                        all_eliminations |=
-                            (res.eliminations[ec] = find_common_peers_in_pattern(all_ec) & patterns[ec]);
+                        const auto ec_peers = als[i].common_peers[ec] & als[j].common_peers[ec];
+                        all_eliminations |= (res.eliminations[ec] = ec_peers & patterns[ec]);
                     }
                     if (all_eliminations.any())
                         return res;

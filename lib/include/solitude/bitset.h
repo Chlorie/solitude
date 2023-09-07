@@ -53,7 +53,13 @@ namespace sltd
             class Iterator
             {
             public:
-                constexpr explicit Iterator(const Bitset& self) noexcept: self_(&self) { ++*this; }
+                constexpr explicit Iterator(const Bitset& self) noexcept: self_(&self)
+                {
+                    if (self_->none())
+                        idx_ = Size;
+                    else
+                        ++*this;
+                }
 
                 constexpr friend bool operator==(const Iterator it, Sentinel) noexcept { return it.idx_ >= Size; }
 
