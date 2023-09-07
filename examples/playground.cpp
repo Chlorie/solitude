@@ -36,11 +36,11 @@ public:
         {
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
             // current_ =
-            //     Board::from_repr("...86...7....752..3..2...8..57....42..2...3..63....85..9...2..6..351....4...96...");
+            //     Board::from_repr("978..5.46....4.9.....7....1...4.15..1...5...7..56.8...6....4.....2.8....83.5..129");
             // current_ = Board::from_full_repr(
-            //     "8(156)(146)(15)732(1459)(1459)(147)(157)(1247)9(28)(158)63(145)(139)(159)(123)(125)64(15)782(179)(147)"
-            //     "3(49)(15)86(1459)(1469)(169)5(126)(28)(18)7(149)3(16)38(156)(49)7(49)(15)2(137)2(137)456(39)8(179)("
-            //     "1567)4(167)839(15)2(157)(35)89712(34)(45)6");
+            //     "978(123)(123)5(23)46(235)(1256)(136)84(236)97(235)(2345)(2456)(36)7(239)(2369)(238)(358)1(237)(268)("
+            //     "3679)4(379)15(69)(238)1(48)(369)(239)5(239)(468)(689)7(2347)(249)56(379)8(234)1(234)6(159)(179)(1239)("
+            //     "123)4(378)(358)(358)(57)(159)2(139)8(39)(3467)(356)(345)834567129");
             current_solved_ = current_;
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
@@ -80,7 +80,7 @@ public:
                     fmt::print("\x1b[H");
                     current_.print(true);
                     fmt::println("\x1b[0JCan't solve using given strategies");
-                    // (void)std::getchar();
+                    (void)std::getchar();
                 }
                 break;
             }
@@ -118,9 +118,9 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                if constexpr (std::is_same_v<Solver, AlsXZ>)
-                    //    if (std::pair{args...}.first >= 4)
-                    (void)std::getchar();
+                // if constexpr (std::is_same_v<Solver, AlsXZ>)
+                //     if (std::pair{args...}.first >= 4)
+                (void)std::getchar();
             }
             if (check_solver_correctness_)
             {
@@ -254,8 +254,8 @@ int main()
 try
 {
     // debug();
-    // generate_test();
-    run_test();
+    generate_test();
+    // run_test();
 }
 catch (const std::exception& e)
 {

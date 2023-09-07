@@ -76,6 +76,37 @@ namespace sltd
                 res |= board.cells[i];
             return res;
         }
+
+        std::pair<int, int> find_rccs( //
+            const Board& board, const std::array<PatternMask, board_size>& patterns, //
+            const Als& als1, const Als& als2)
+        {
+            std::pair rccs{board_size, board_size};
+            // We need at least two common candidates between the two ALSs:
+            // One for the RCC, another one for the eliminations
+            const CandidateMask common = als1.candidates & als2.candidates;
+            if (std::popcount(common) < 2)
+                return rccs;
+            const PatternMask overlap = als1.cells & als2.cells;
+            const CandidateMask overlapping_candidates = find_candidates_in_pattern(board, overlap);
+            const CandidateMask rcc_candidates = common & ~overlapping_candidates;
+            if (!rcc_candidates) // The overlapping area may not contain an RCC
+                return rccs;
+            for (const int rcc : set_bit_indices(rcc_candidates))
+                // All the RCC cells must see each other
+                if (als1.common_peers[rcc].contains(als2.cells & patterns[rcc]) && //
+                    als2.common_peers[rcc].contains(als1.cells & patterns[rcc]))
+                {
+                    if (rccs.first == board_size) // The first RCC
+                        rccs.first = rcc;
+                    else // The second RCC, no need to search more
+                    {
+                        rccs.second = rcc;
+                        return rccs;
+                    }
+                }
+            return rccs;
+        }
     } // namespace
 
     std::string AlsXZ::description() const
@@ -98,40 +129,42 @@ namespace sltd
         for (std::size_t i = 0; i < als.size(); i++)
             for (std::size_t j = i + 1; j < als.size(); j++)
             {
-                // We need at least two common candidates between the two ALSs:
-                // One for the RCC, another one for the eliminations
+                const auto [rcc1, rcc2] = find_rccs(board, patterns, als[i], als[j]);
+                if (rcc1 == board_size) // No RCC
+                    continue;
                 const CandidateMask common = als[i].candidates & als[j].candidates;
-                if (std::popcount(common) < 2)
-                    continue;
-                const PatternMask overlap = als[i].cells & als[j].cells;
-                const CandidateMask overlapping_candidates = find_candidates_in_pattern(board, overlap);
-                const CandidateMask rcc_candidates = common & ~overlapping_candidates;
-                if (!rcc_candidates) // The overlapping area may not contain an RCC
-                    continue;
-                for (const int rcc : set_bit_indices(rcc_candidates))
+                const CandidateMask eliminated_candidates = rcc2 == board_size ? common ^ (1 << rcc1) : common;
+                const CandidateMask rccs = rcc2 == board_size ? 1 << rcc1 : (1 << rcc1) | (1 << rcc2);
+                AlsXZ res{
+                    .als = {als[i].cells, als[j].cells},
+                    .candidates = {als[i].candidates, als[j].candidates},
+                    .rcc = rccs //
+                };
+                PatternMask all_eliminations;
+                for (const int ec : set_bit_indices(eliminated_candidates))
                 {
-                    const auto first_rcc = als[i].cells & patterns[rcc];
-                    const auto second_rcc = als[j].cells & patterns[rcc];
-                    // All the RCC cells must see each other
-                    if (!als[i].common_peers[rcc].contains(second_rcc) || //
-                        !als[j].common_peers[rcc].contains(first_rcc))
-                        continue;
-                    // Find all eliminations
-                    const CandidateMask eliminated_candidates = common ^ (1 << rcc);
-                    AlsXZ res{
-                        .als = {als[i].cells, als[j].cells},
-                        .candidates = {als[i].candidates, als[j].candidates},
-                        .rcc = static_cast<CandidateMask>(1 << rcc) //
-                    };
-                    PatternMask all_eliminations;
-                    for (const int ec : set_bit_indices(eliminated_candidates))
-                    {
-                        const auto ec_peers = als[i].common_peers[ec] & als[j].common_peers[ec];
-                        all_eliminations |= (res.eliminations[ec] = ec_peers & patterns[ec]);
-                    }
-                    if (all_eliminations.any())
-                        return res;
+                    const auto ec_peers = als[i].common_peers[ec] & als[j].common_peers[ec];
+                    all_eliminations |= (res.eliminations[ec] = ec_peers & patterns[ec]);
                 }
+                if (rcc2 != board_size) // Double RCC
+                {
+                    for (const CandidateMask rcc1_extras = als[i].candidates & ~rccs;
+                         const int ec : set_bit_indices(rcc1_extras))
+                    {
+                        const auto ec_peers = als[i].common_peers[ec] & patterns[ec];
+                        res.eliminations[ec] |= ec_peers;
+                        all_eliminations |= ec_peers;
+                    }
+                    for (const CandidateMask rcc2_extras = als[j].candidates & ~rccs;
+                         const int ec : set_bit_indices(rcc2_extras))
+                    {
+                        const auto ec_peers = als[j].common_peers[ec] & patterns[ec];
+                        res.eliminations[ec] |= ec_peers;
+                        all_eliminations |= ec_peers;
+                    }
+                }
+                if (all_eliminations.any())
+                    return res;
             }
         return std::nullopt;
     }
