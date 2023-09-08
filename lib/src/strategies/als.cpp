@@ -194,31 +194,36 @@ namespace sltd
     {
         const auto patterns = board.all_number_patterns();
         const auto als = find_all_als(board);
-        for (std::size_t i = 0; i < als.size(); i++) // Pincer 1
-            for (std::size_t j = i + 1; j < als.size(); j++) // Pivot
-            {
-                const auto [x, extra1] = find_rccs(board, patterns, als[i], als[j]);
+        using RccEntry = std::pair<std::size_t, CandidateMask>;
+        std::vector<std::vector<RccEntry>> rccs(als.size());
+        for (std::size_t i = 0; i < als.size(); i++)
+            for (std::size_t j = i + 1; j < als.size(); j++)
                 // If the two ALSs share 2 RCCs you should just use an ALS-XZ move instead
-                if (x == board_size || extra1 != board_size)
-                    continue;
-                const CandidateMask z1_mask = als[i].candidates ^ (1 << x);
-                for (std::size_t k = i + 1; k < als.size(); k++) // Pincer 2
+                if (const auto [rcc1, rcc2] = find_rccs(board, patterns, als[i], als[j]);
+                    rcc1 != board_size && rcc2 == board_size)
                 {
-                    if (!(als[k].candidates & z1_mask)) // Pincer 2 doesn't contain a possible Z
+                    const CandidateMask rcc_mask = 1 << rcc1;
+                    rccs[i].emplace_back(j, rcc_mask);
+                    rccs[j].emplace_back(i, rcc_mask);
+                }
+        for (std::size_t i = 0; i < als.size(); i++) // Pincer 1
+            for (const auto [j, x] : rccs[i]) // Pivot and x
+            {
+                const CandidateMask z1_mask = als[i].candidates ^ x;
+                for (const auto [k, y] : rccs[j]) // Pincer 2 and y
+                {
+                    if (x == y || k <= i)
                         continue;
-                    const auto [y, extra2] = find_rccs(board, patterns, als[j], als[k]);
-                    if (y == board_size || x == y || extra2 != board_size)
-                        continue;
-                    const CandidateMask z_mask = z1_mask & (als[k].candidates ^ (1 << y));
-                    if (!z_mask)
+                    const CandidateMask z_mask = z1_mask & (als[k].candidates ^ y);
+                    if (!z_mask) // Pincer 2 doesn't contain a possible Z
                         continue;
                     AlsXYWing res{
                         .pivot = als[j].cells,
                         .pincers = {als[i].cells, als[k].cells},
                         .pivot_candidates = als[j].candidates,
                         .pincer_candidates = {als[i].candidates, als[k].candidates},
-                        .x = static_cast<CandidateMask>(1 << x),
-                        .y = static_cast<CandidateMask>(1 << y) //
+                        .x = x,
+                        .y = y //
                     };
                     PatternMask all_eliminations;
                     for (const int z : set_bit_indices(z_mask))

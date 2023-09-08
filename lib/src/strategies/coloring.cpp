@@ -19,7 +19,7 @@ namespace sltd
 
     std::string RemotePair::description() const
     {
-        return fmt::format("Remote Pair: 1st group {}, 2nd group {}, [{}!={}]", //
+        return fmt::format("Remote Pair: 1st group {}, 2nd group {} => {}!={}", //
             describe_cells(groups[0]), describe_cells(groups[1]), //
             describe_cells(eliminations), describe_candidates(candidates));
     }
@@ -76,14 +76,14 @@ namespace sltd
     std::string SimpleColors::description() const
     {
         if (type() == SimpleColorType::trap)
-            return fmt::format("Simple Color Trap: number {}, 1st color {}, 2nd color {}, [{}!={}]", //
+            return fmt::format("Simple Color Trap: number {}, 1st color {}, 2nd color {} => {}!={}", //
                 describe_candidates(candidate), describe_cells(colors[0]), describe_cells(colors[1]), //
                 describe_cells(eliminations), describe_candidates(candidate));
         else
-            return fmt::format("Simple Color Wrap: number {}, remaining color {}, eliminated [{}!={}] due to {}-{}", //
+            return fmt::format("Simple Color Wrap: number {}, remaining color {}, {}-{} => {}!={}", //
                 describe_candidates(candidate), describe_cells(colors[0]), //
-                describe_cells(eliminations), describe_candidates(candidate), //
-                cell_name(eliminating_pair[0]), cell_name(eliminating_pair[1]));
+                cell_name(eliminating_pair[0]), cell_name(eliminating_pair[1]), //
+                describe_cells(eliminations), describe_candidates(candidate));
     }
 
     std::optional<SimpleColors> SimpleColors::try_find(const Board& board)

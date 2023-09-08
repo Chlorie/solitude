@@ -227,8 +227,8 @@ namespace sltd
             describe_candidates(candidate));
         for (int i = 0; i < node_idx.size(); i++)
             res += fmt::format("{}{}", cell_name(node_idx[i]), i % 2 ? '-' : '=');
-        res.back() = ',';
-        res += fmt::format(" [{}!={}]", describe_cells(eliminations), describe_candidates(candidate));
+        res.back() = ' ';
+        res += fmt::format("=> {}!={}", describe_cells(eliminations), describe_candidates(candidate));
         return res;
     }
 
@@ -266,7 +266,7 @@ namespace sltd
         std::string res = fmt::format("XY-Chain: (length {}) {}-", node_idx.size() - 1, number);
         for (const int i : node_idx)
             res += fmt::format("{}-", cell_name(i));
-        res += fmt::format("{}, [{}!={}]", number, describe_cells(eliminations), number);
+        res += fmt::format("{} => {}!={}", number, describe_cells(eliminations), number);
         return res;
     }
 

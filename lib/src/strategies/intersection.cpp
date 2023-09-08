@@ -9,7 +9,7 @@ namespace sltd
 {
     std::string Intersection::description() const
     {
-        return fmt::format("Intersection: {}->{}, {}={}", //
+        return fmt::format("Intersection: {}->{} => {}={}", //
             house_name(base_house_idx), house_name(cover_house_idx), //
             describe_cells_in_house(base_house_idx, base_idx_mask, '/'), //
             describe_candidates(candidate));

@@ -249,7 +249,7 @@ void run_test()
     // Tester("test_cases/w_wing.txt").test<WWing>();
     // Tester("test_cases/basic_sue_de_coq.txt").test<SueDeCoq>(false);
     // Tester("test_cases/extended_sue_de_coq.txt").test<SueDeCoq>(true);
-    Tester("test_cases/als_xz.txt").test<AlsXZ>();
+    // Tester("test_cases/als_xz.txt").test<AlsXZ>();
     Tester("test_cases/als_xy_wing.txt").test<AlsXYWing>();
 }
 
