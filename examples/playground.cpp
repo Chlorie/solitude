@@ -73,7 +73,9 @@ public:
                     solve_with<XChain>(IntRange{.min = 7}) || //
                     solve_with<XYChain>(IntRange{.min = 6}) || //
                     solve_with<SueDeCoq>(true) || // Extended SdC
-                    solve_with_target<AlsXZ>())
+                    solve_with<AlsXZ>() || //
+                    solve_with_target<AlsXYWing>() //
+                )
                     continue;
                 if (show_steps_)
                 {
@@ -118,9 +120,9 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                // if constexpr (std::is_same_v<Solver, AlsXZ>)
-                //     if (std::pair{args...}.first >= 4)
-                (void)std::getchar();
+                if constexpr (std::is_same_v<Solver, AlsXYWing>)
+                    //     if (std::pair{args...}.first >= 4)
+                    (void)std::getchar();
             }
             if (check_solver_correctness_)
             {
@@ -237,7 +239,7 @@ void generate_test() { TestCaseFinder("test_cases/test.txt", 10'000, false, true
 
 void run_test()
 {
-    // Tester("test_cases/extended_sue_de_coq.txt").show_solutions<SueDeCoq>(true); return;
+    // Tester("test_cases/test.txt").show_solutions<AlsXYWing>(); return;
     // Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
     // Tester("test_cases/finned_swordfish.txt").test<Fish>(3, true);
     // Tester("test_cases/finned_jellyfish.txt").test<Fish>(4, true);
@@ -248,14 +250,15 @@ void run_test()
     // Tester("test_cases/basic_sue_de_coq.txt").test<SueDeCoq>(false);
     // Tester("test_cases/extended_sue_de_coq.txt").test<SueDeCoq>(true);
     Tester("test_cases/als_xz.txt").test<AlsXZ>();
+    Tester("test_cases/als_xy_wing.txt").test<AlsXYWing>();
 }
 
 int main()
 try
 {
     // debug();
-    generate_test();
-    // run_test();
+    // generate_test();
+    run_test();
 }
 catch (const std::exception& e)
 {

@@ -10,7 +10,7 @@ namespace sltd
 {
     struct SOLITUDE_API XYWing
     {
-        static constexpr std::string_view name = "XY-wing";
+        static constexpr std::string_view name = "XY-Wing";
 
         int pivot_idx = 0;
         int pincer_idx[2]{};
@@ -24,7 +24,7 @@ namespace sltd
 
     struct SOLITUDE_API XYZWing
     {
-        static constexpr std::string_view name = "XYZ-wing";
+        static constexpr std::string_view name = "XYZ-Wing";
 
         int pivot_idx = 0;
         int pincer_idx[2]{};
@@ -38,7 +38,7 @@ namespace sltd
 
     struct SOLITUDE_API WWing
     {
-        static constexpr std::string_view name = "W-wing";
+        static constexpr std::string_view name = "W-Wing";
 
         int ends[2]{};
         int link[2]{};
