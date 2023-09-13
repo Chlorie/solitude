@@ -158,15 +158,26 @@ namespace sltd
 
     std::string NakedSingle::description() const
     {
-        return fmt::format("Naked single: {}={}", //
+        return fmt::format("Naked Single: {}={}", //
             cell_name(cell_idx), std::countr_zero(candidate) + 1);
     }
 
-    std::optional<NakedSingle> NakedSingle::try_find(const Board& board)
+    std::optional<NakedSingle> NakedSingle::try_find(const Board& board, const bool full_house_only)
     {
         for (int i = 0; i < cell_count; i++)
             if (!board.filled[i] && std::has_single_bit(board.cells[i]))
+            {
+                if (full_house_only)
+                {
+                    const int row = i / board_size, column = i % board_size;
+                    const int box = row / box_height * box_height + column / box_width;
+                    if ((nth_row(row) & board.filled).count() != board_size - 1 &&
+                        (nth_column(column) & board.filled).count() != board_size - 1 &&
+                        (nth_box(box) & board.filled).count() != board_size - 1)
+                        continue;
+                }
                 return NakedSingle{.cell_idx = i, .candidate = board.cells[i]};
+            }
         return std::nullopt;
     }
 
@@ -203,6 +214,34 @@ namespace sltd
         const auto& house = house_indices[house_idx];
         for (const int i : set_bit_indices<CandidateMask>(~idx_mask & full_mask))
             board.cells[house[i]] &= ~candidates;
+    }
+
+    std::string HiddenSingle::description() const
+    {
+        return fmt::format("Hidden Single: in {}, {}={}", //
+            house_name(house_idx), cell_name(cell_idx), describe_candidates(candidate));
+    }
+
+    std::optional<HiddenSingle> HiddenSingle::try_find(const Board& board, const bool box_only)
+    {
+        const auto patterns = board.all_number_patterns();
+        for (int house = box_only ? 2 * board_size : 0; house < house_indices.size(); house++)
+            for (int i = 0; i < board_size; i++)
+                if (const auto remaining = patterns[i] & house_patterns[house]; remaining.count() == 1)
+                    if (const int cell_idx = countr_zero(remaining); !board.filled[cell_idx])
+                        return HiddenSingle{
+                            .house_idx = house,
+                            .cell_idx = countr_zero(remaining),
+                            .candidate = static_cast<CandidateMask>(1 << i) //
+                        };
+        return std::nullopt;
+    }
+
+    void HiddenSingle::apply_to(Board& board) const
+    {
+        board.cells[cell_idx] = candidate;
+        board.eliminate_candidates_from_naked_single(cell_idx);
+        board.filled.set(cell_idx);
     }
 
     std::string HiddenSubset::description() const

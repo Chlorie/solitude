@@ -17,7 +17,7 @@ namespace sltd
         CandidateMask candidate = 0;
 
         std::string description() const;
-        static std::optional<NakedSingle> try_find(const Board& board);
+        static std::optional<NakedSingle> try_find(const Board& board, bool full_house_only = false);
         void apply_to(Board& board) const;
     };
 
@@ -31,6 +31,19 @@ namespace sltd
 
         std::string description() const;
         static std::optional<NakedSubset> try_find(const Board& board, int size);
+        void apply_to(Board& board) const;
+    };
+
+    struct SOLITUDE_API HiddenSingle
+    {
+        static constexpr std::string_view name = "HiddenSingle";
+
+        int house_idx = 0;
+        int cell_idx = 0;
+        CandidateMask candidate = 0;
+
+        std::string description() const;
+        static std::optional<HiddenSingle> try_find(const Board& board, bool box_only = false);
         void apply_to(Board& board) const;
     };
 

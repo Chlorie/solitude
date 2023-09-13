@@ -35,8 +35,8 @@ public:
         while (case_count_ < target_)
         {
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
-            // current_ =
-            //     Board::from_repr("978..5.46....4.9.....7....1...4.15..1...5...7..56.8...6....4.....2.8....83.5..129");
+            current_ =
+                Board::from_repr("....41.3..57....29....5.48...3.8..9....5.9....1..2.7...84.9....97....85..6.37....");
             // current_ = Board::from_full_repr(
             //     "978(123)(123)5(23)46(235)(1256)(136)84(236)97(235)(2345)(2456)(36)7(239)(2369)(238)(358)1(237)(268)("
             //     "3679)4(379)15(69)(238)1(48)(369)(239)5(239)(468)(689)7(2347)(249)56(379)8(234)1(234)6(159)(179)(1239)("
@@ -45,8 +45,10 @@ public:
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
             {
-                if (solve_with<NakedSingle>() || //
-                    solve_with<HiddenSubset>(1) || //
+                if (solve_with<NakedSingle>(true) || // Full house
+                    solve_with<HiddenSingle>(true) || // Hidden single in box
+                    solve_with<HiddenSingle>() || // Hidden single
+                    solve_with<NakedSingle>() || //
                     solve_with<Intersection>() || //
                     solve_with<NakedSubset>(2) || //
                     solve_with<HiddenSubset>(2) || //
@@ -74,7 +76,7 @@ public:
                     solve_with<XYChain>(IntRange{.min = 6}) || //
                     solve_with<SueDeCoq>(true) || // Extended SdC
                     solve_with<AlsXZ>() || //
-                    solve_with_target<AlsXYWing>() //
+                    solve_with<AlsXYWing>() //
                 )
                     continue;
                 if (show_steps_)
@@ -120,9 +122,9 @@ private:
                 fmt::print("\x1b[H");
                 current_.print(true);
                 fmt::println("\x1b[0J{}\n", opt->description());
-                if constexpr (std::is_same_v<Solver, AlsXYWing>)
-                    //     if (std::pair{args...}.first >= 4)
-                    (void)std::getchar();
+                // if constexpr (std::is_same_v<Solver, AlsXYWing>)
+                //      if (std::pair{args...}.first >= 4)
+                (void)std::getchar();
             }
             if (check_solver_correctness_)
             {
@@ -235,11 +237,13 @@ void debug()
         fmt::println("Didn't find anything");
 }
 
-void generate_test() { TestCaseFinder("test_cases/test.txt", 10'000, false, true).run(); }
+void generate_test() { TestCaseFinder("test_cases/test.txt", 10'000, true, true).run(); }
 
 void run_test()
 {
     // Tester("test_cases/test.txt").show_solutions<AlsXYWing>(); return;
+    // Tester("test_cases/naked_single.txt").test<NakedSingle>();
+    // Tester("test_cases/hidden_single.txt").test<HiddenSingle>();
     // Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
     // Tester("test_cases/finned_swordfish.txt").test<Fish>(3, true);
     // Tester("test_cases/finned_jellyfish.txt").test<Fish>(4, true);
@@ -250,15 +254,15 @@ void run_test()
     // Tester("test_cases/basic_sue_de_coq.txt").test<SueDeCoq>(false);
     // Tester("test_cases/extended_sue_de_coq.txt").test<SueDeCoq>(true);
     // Tester("test_cases/als_xz.txt").test<AlsXZ>();
-    Tester("test_cases/als_xy_wing.txt").test<AlsXYWing>();
+    // Tester("test_cases/als_xy_wing.txt").test<AlsXYWing>();
 }
 
 int main()
 try
 {
     // debug();
-    // generate_test();
-    run_test();
+    generate_test();
+    // run_test();
 }
 catch (const std::exception& e)
 {

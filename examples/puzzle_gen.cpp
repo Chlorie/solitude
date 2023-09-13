@@ -14,7 +14,7 @@
 #include <solitude/generator.h>
 #include <solitude/strategies.h>
 
-inline constexpr std::size_t difficulty_count = 5;
+inline constexpr std::size_t difficulty_count = 7;
 
 class PuzzleDifficultyLabeler
 {
@@ -27,16 +27,21 @@ public:
         using namespace clu::literals;
         while (!board_.filled.all())
         {
-            if (solve_with<NakedSingle>() || //
+            if (solve_with<NakedSingle>(true) || // Full house
+                solve_with<HiddenSingle>(true)) // Hidden single in box
+                continue;
+            diff_ = std::max(diff_, 1_uz);
+            if (solve_with<HiddenSingle>() || // Hidden single
+                solve_with<NakedSingle>() || //
                 solve_with<HiddenSubset>(1) || //
                 solve_with<Intersection>())
                 continue;
-            diff_ = std::max(diff_, 1_uz);
+            diff_ = std::max(diff_, 2_uz);
             if (solve_with<NakedSubset>(2) || //
                 solve_with<HiddenSubset>(2) || //
                 solve_with<Fish>(2, false))
                 continue;
-            diff_ = std::max(diff_, 2_uz);
+            diff_ = std::max(diff_, 3_uz);
             if (solve_with<NakedSubset>(3) || //
                 solve_with<HiddenSubset>(3) || //
                 solve_with<Fish>(2, true) || // Finned X-wing
@@ -48,15 +53,21 @@ public:
                 solve_with<XChain>(IntRange{.max = 3}) || // Turbot fish
                 solve_with<XYChain>(IntRange{.max = 3}))
                 continue;
-            diff_ = std::max(diff_, 3_uz);
+            diff_ = std::max(diff_, 4_uz);
             if (solve_with<NakedSubset>(4) || //
                 solve_with<HiddenSubset>(4) || //
                 solve_with<RemotePair>() || //
                 solve_with<SimpleColors>() || //
                 solve_with<Fish>(4, false) || // Jellyfish
                 solve_with<Fish>(4, true) || // Finned Jellyfish
-                solve_with<XChain>(IntRange{.max = 5}) || //
-                solve_with<XYChain>(IntRange{.max = 5}))
+                solve_with<XChain>(IntRange{.min = 5, .max = 5}) || //
+                solve_with<XYChain>(IntRange{.min = 4, .max = 5}))
+                continue;
+            diff_ = std::max(diff_, 5_uz);
+            if (solve_with<XChain>(IntRange{.min = 7}) || //
+                solve_with<XYChain>(IntRange{.min = 6}) || //
+                solve_with<SueDeCoq>(false) || //
+                solve_with<AlsXZ>())
                 continue;
             return difficulty_count - 1;
         }
@@ -105,8 +116,12 @@ public:
             log_time();
             fmt::println("Writing file {}", file_path.generic_string());
             std::ofstream file(file_path);
-            for (const auto& board : puzzles_[i])
+            for (auto board : puzzles_[i])
+            {
+                file << board.repr() << ' ';
+                board.brute_force_solve(1);
                 file << board.repr() << '\n';
+            }
         }
         log_time();
         fmt::println("All done");
@@ -114,7 +129,7 @@ public:
 
 private:
     static constexpr std::string_view difficulty_names[difficulty_count]{
-        "trivial", "beginner", "intermediate", "advanced", "expert" //
+        "trivial", "casual", "beginner", "intermediate", "advanced", "expert", "master" //
     };
 
     std::filesystem::path path_;
@@ -198,4 +213,4 @@ private:
     }
 };
 
-int main() { PuzzleGenerator("puzzles", 20'000, 16).run(); }
+int main() { PuzzleGenerator("puzzles-20230912", 20'000, 16).run(); }

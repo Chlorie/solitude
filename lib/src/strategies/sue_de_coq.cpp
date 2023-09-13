@@ -8,57 +8,6 @@ namespace sltd
 {
     namespace
     {
-        struct IntersectionInfo
-        {
-            bool is_row = false;
-            int box_idx = 0;
-            int line_idx = 0;
-        };
-
-        struct IntersectionMasks
-        {
-            PatternMask line;
-            PatternMask box;
-
-            constexpr PatternMask intersection() const noexcept { return line & box; }
-        };
-
-        constexpr auto get_intersection_info(const PatternMask& pattern)
-        {
-            auto it = pattern.set_bit_indices().begin();
-            const int first = *it, second = *++it;
-            const int row1 = first / board_size, col1 = first % board_size, row2 = second / board_size;
-            const int box = row1 / box_height * box_height + col1 / box_width;
-            return IntersectionInfo{
-                .is_row = row1 == row2,
-                .box_idx = box,
-                .line_idx = row1 == row2 ? row1 : col1 //
-            };
-        }
-
-        constexpr auto generate_intersection_masks()
-        {
-            constexpr int row_intersection_count = board_size * box_height;
-            constexpr int col_intersection_count = board_size * box_width;
-            std::array<IntersectionMasks, row_intersection_count + col_intersection_count> res;
-            int i = 0;
-            for (int row = 0; row < board_size; row++)
-            {
-                const int box_begin = row / box_height * box_height;
-                for (int box = box_begin; box < box_begin + box_height; box++)
-                    res[i++] = {.line = nth_row(row), .box = nth_box(box)};
-            }
-            for (int col = 0; col < board_size; col++)
-            {
-                const int box_begin = col / box_width;
-                for (int box = box_begin; box < board_size; box += box_height)
-                    res[i++] = {.line = nth_column(col), .box = nth_box(box)};
-            }
-            return res;
-        }
-
-        constexpr auto all_intersections = generate_intersection_masks();
-
         PatternMask find_eliminations(const Board& board, PatternMask unfiltered, const CandidateMask candidates)
         {
             for (const int i : unfiltered.set_bit_indices())
