@@ -17,7 +17,7 @@ Implementation of human-like sudoku-solving strategies.
 - [x] remote pair
 - [x] simple colors
 - [x] X-chain, XY-chain
-- [ ] chains
+- [x] chains
 - [x] Sue de Coq
 - [ ] uniqueness testing
 - [x] ALS-XZ, ALS-XY-wing

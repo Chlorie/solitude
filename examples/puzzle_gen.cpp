@@ -66,6 +66,7 @@ public:
             diff_ = std::max(diff_, 5_uz);
             if (solve_with<XChain>(IntRange{.min = 7}) || //
                 solve_with<XYChain>(IntRange{.min = 6}) || //
+                solve_with<Chain>(1'024) || //
                 solve_with<SueDeCoq>(false) || //
                 solve_with<AlsXZ>())
                 continue;
@@ -213,4 +214,4 @@ private:
     }
 };
 
-int main() { PuzzleGenerator("puzzles-20230912", 20'000, 16).run(); }
+int main() { PuzzleGenerator("puzzles-20230914", 20'000, 20).run(); }

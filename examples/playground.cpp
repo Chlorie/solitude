@@ -35,12 +35,12 @@ public:
         while (case_count_ < target_)
         {
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
-            current_ =
-                Board::from_repr("....41.3..57....29....5.48...3.8..9....5.9....1..2.7...84.9....97....85..6.37....");
+            // current_ =
+            //     Board::from_repr(".8.2..1.3....7........6..4....1.7.5.7..65239.2....9716563..............997..2.5..");
             // current_ = Board::from_full_repr(
-            //     "978(123)(123)5(23)46(235)(1256)(136)84(236)97(235)(2345)(2456)(36)7(239)(2369)(238)(358)1(237)(268)("
-            //     "3679)4(379)15(69)(238)1(48)(369)(239)5(239)(468)(689)7(2347)(249)56(379)8(234)1(234)6(159)(179)(1239)("
-            //     "123)4(378)(358)(358)(57)(159)2(139)8(39)(3467)(356)(345)834567129");
+            //     "7(2359)(29)(125)68(13)(135)4(568)(245)(246)(1257)(145)39(1567)(1578)(3568)1(46)(57)(45)92(3567)(3578)("
+            //     "15)(25)397684(12)478321596(19)6(129)4857(123)(123)(139)(349)56(13)(27)(14)8(27)(136)(34)78(135)(24)("
+            //     "146)(125)928(146)(15)9(47)(1346)(1357)(357)");
             current_solved_ = current_;
             (void)current_solved_.brute_force_solve(1);
             while (case_count_ < target_ && !current_.filled.all())
@@ -72,8 +72,7 @@ public:
                     solve_with<XChain>(IntRange{.min = 5, .max = 5}) || //
                     solve_with<XYChain>(IntRange{.min = 4, .max = 5}) || //
                     solve_with<SueDeCoq>(false) || // Basic SdC
-                    solve_with<XChain>(IntRange{.min = 7}) || //
-                    solve_with<XYChain>(IntRange{.min = 6}) || //
+                    solve_with_target<Chain>(1'024) || //
                     solve_with<SueDeCoq>(true) || // Extended SdC
                     solve_with<AlsXZ>() || //
                     solve_with<AlsXYWing>() //
@@ -222,26 +221,11 @@ private:
     std::vector<Board> boards_;
 };
 
-void debug()
-{
-    constexpr std::string_view puzzle = "(47)(56)(56)(478)19(37)2(38)(12)3(1278)6(78)594"
-                                        "(18)9(147)(178)2(3478)(37)(17)65(13)(15)(135)"
-                                        "(89)(89)2476(47)(467)(67)351289829(47)(47)6(13)"
-                                        "5(13)58(37)(79)(2379)461(27)6941(27)853(27)(123)"
-                                        "(17)(1237)56(37)894";
-    const auto board = Board::from_full_repr(puzzle);
-    board.print(true);
-    if (const auto opt = Fish::try_find(board, 4, false))
-        fmt::println("{}", opt->description());
-    else
-        fmt::println("Didn't find anything");
-}
-
-void generate_test() { TestCaseFinder("test_cases/test.txt", 10'000, true, true).run(); }
+void generate_test() { TestCaseFinder("test_cases/test.txt", 10'000, false, true).run(); }
 
 void run_test()
 {
-    // Tester("test_cases/test.txt").show_solutions<AlsXYWing>(); return;
+    // Tester("test_cases/chain.txt").show_solutions<Chain>(1'024); return;
     // Tester("test_cases/naked_single.txt").test<NakedSingle>();
     // Tester("test_cases/hidden_single.txt").test<HiddenSingle>();
     // Tester("test_cases/finned_xwing.txt").test<Fish>(2, true);
@@ -253,6 +237,7 @@ void run_test()
     // Tester("test_cases/w_wing.txt").test<WWing>();
     // Tester("test_cases/basic_sue_de_coq.txt").test<SueDeCoq>(false);
     // Tester("test_cases/extended_sue_de_coq.txt").test<SueDeCoq>(true);
+    Tester("test_cases/chain.txt").test<Chain>(1'024);
     // Tester("test_cases/als_xz.txt").test<AlsXZ>();
     // Tester("test_cases/als_xy_wing.txt").test<AlsXYWing>();
 }
@@ -260,9 +245,8 @@ void run_test()
 int main()
 try
 {
-    // debug();
-    generate_test();
-    // run_test();
+    // generate_test();
+    run_test();
 }
 catch (const std::exception& e)
 {
