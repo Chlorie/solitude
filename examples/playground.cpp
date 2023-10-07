@@ -9,6 +9,7 @@
 #include <solitude/board.h>
 #include <solitude/generator.h>
 #include <solitude/strategies.h>
+#include <solitude/step.h>
 
 #include "benchmark.h"
 
@@ -35,8 +36,8 @@ public:
         while (case_count_ < target_)
         {
             current_ = generate_minimal_puzzle(SymmetryType::centrosymmetric);
-            // current_ =
-            //     Board::from_repr(".8.2..1.3....7........6..4....1.7.5.7..65239.2....9716563..............997..2.5..");
+            current_ =
+                Board::from_repr("9.75.62..8...9...72...74..1..1...8..598463172.........1.26497.5..41.8629..9...41.");
             // current_ = Board::from_full_repr(
             //     "7(2359)(29)(125)68(13)(135)4(568)(245)(246)(1257)(145)39(1567)(1578)(3568)1(46)(57)(45)92(3567)(3578)("
             //     "15)(25)397684(12)478321596(19)6(129)4857(123)(123)(139)(349)56(13)(27)(14)8(27)(136)(34)78(135)(24)("
@@ -72,7 +73,7 @@ public:
                     solve_with<XChain>(IntRange{.min = 5, .max = 5}) || //
                     solve_with<XYChain>(IntRange{.min = 4, .max = 5}) || //
                     solve_with<SueDeCoq>(false) || // Basic SdC
-                    solve_with_target<Chain>(1'024) || //
+                    solve_with<Chain>(1'024) || //
                     solve_with<SueDeCoq>(true) || // Extended SdC
                     solve_with<AlsXZ>() || //
                     solve_with<AlsXYWing>() //
@@ -187,11 +188,8 @@ public:
         const bench::iteration_result t = bench::time_iterations(
             [&, i = std::size_t{}]() mutable
             {
-                if (const auto opt = Solver::try_find(boards_[i], args...); !opt)
-                {
-                    fmt::println("Failed regression test!\nBoard representation: {}", boards_[i].full_repr());
-                    throw std::runtime_error("Regression test failed");
-                }
+                if (!Solver::try_find(boards_[i], args...))
+                    test_failure(boards_[i]);
                 i = (i + 1) % boards_.size();
             });
         fmt::println("Time: {:8.3f}±{:8.3f}μs - {:7} iter ({:6.1f}μs ~ {:6.1f}μs)", //
@@ -211,17 +209,20 @@ public:
                 (void)std::getchar();
             }
             else
-            {
-                fmt::println("Failed regression test!\nBoard representation: {}", board.full_repr());
-                throw std::runtime_error("Regression test failed");
-            }
+                test_failure(board);
     }
 
 private:
     std::vector<Board> boards_;
+
+    [[noreturn]] static void test_failure(const Board& board)
+    {
+        fmt::println("Failed regression test!\nBoard representation: {}", board.full_repr());
+        throw std::runtime_error("Regression test failed");
+    }
 };
 
-void generate_test() { TestCaseFinder("test_cases/test.txt", 10'000, false, true).run(); }
+void generate_test() { TestCaseFinder("test_cases/test.txt", 10'000, true, true).run(); }
 
 void run_test()
 {
@@ -245,8 +246,8 @@ void run_test()
 int main()
 try
 {
-    // generate_test();
-    run_test();
+    generate_test();
+    // run_test();
 }
 catch (const std::exception& e)
 {
