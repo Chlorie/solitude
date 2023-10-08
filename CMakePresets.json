@@ -2,6 +2,50 @@
     "version": 2,
     "configurePresets": [
         {
+            "name": "windows-x64-debug-static",
+            "displayName": "Windows x64 Debug (Static Linking)",
+            "description": "Target Windows with the Visual Studio development environment.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug",
+                "_VCPKG_INSTALLED_DIR": "${sourceDir}/out/vcpkg_installed/win64-static",
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+                "VCPKG_MANIFEST_FEATURES": "build-examples",
+                "SOLITUDE_BUILD_TESTS": "True"
+            },
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": [ "Windows" ] } }
+        },
+        {
+            "name": "windows-x64-release-static",
+            "displayName": "Windows x64 Release (Static Linking)",
+            "description": "Target Windows with the Visual Studio development environment.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded",
+                "_VCPKG_INSTALLED_DIR": "${sourceDir}/out/vcpkg_installed/win64-static",
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+                "VCPKG_MANIFEST_FEATURES": "build-examples",
+                "SOLITUDE_BUILD_TESTS": "True"
+            },
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": [ "Windows" ] } }
+        },
+        {
             "name": "windows-x64-debug",
             "displayName": "Windows x64 Debug",
             "description": "Target Windows with the Visual Studio development environment.",
@@ -15,7 +59,8 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "_VCPKG_INSTALLED_DIR": "${sourceDir}/out/vcpkg_installed",
+                "_VCPKG_INSTALLED_DIR": "${sourceDir}/out/vcpkg_installed/win64-dynamic",
+                "VCPKG_MANIFEST_FEATURES": "build-examples",
                 "SOLITUDE_BUILD_TESTS": "True"
             },
             "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": [ "Windows" ] } }
@@ -34,58 +79,11 @@
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "_VCPKG_INSTALLED_DIR": "${sourceDir}/out/vcpkg_installed",
+                "_VCPKG_INSTALLED_DIR": "${sourceDir}/out/vcpkg_installed/win64-dynamic",
+                "VCPKG_MANIFEST_FEATURES": "build-examples",
                 "SOLITUDE_BUILD_TESTS": "True"
             },
             "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": [ "Windows" ] } }
-        },
-        {
-            "name": "linux-gcc-debug",
-            "displayName": "Linux Debug (gcc)",
-            "description": "Target the Windows Subsystem for Linux (WSL) or a remote Linux system.",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "g++",
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_TOOLCHAIN_FILE": {
-                    "value": "$env{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake",
-                    "type": "FILEPATH"
-                },
-                "_VCPKG_INSTALLED_DIR": "${sourceDir}/out/vcpkg_installed",
-                "SOLITUDE_BUILD_TESTS": "True"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": [ "Linux" ] },
-                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
-                }
-            }
-        },
-        {
-            "name": "linux-clang-debug",
-            "displayName": "Linux Debug (clang)",
-            "description": "Target the Windows Subsystem for Linux (WSL) or a remote Linux system.",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_TOOLCHAIN_FILE": {
-                    "value": "$env{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake",
-                    "type": "FILEPATH"
-                },
-                "_VCPKG_INSTALLED_DIR": "${sourceDir}/out/vcpkg_installed",
-                "SOLITUDE_BUILD_TESTS": "True"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": [ "Linux" ] },
-                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
-                }
-            }
         }
     ]
 }

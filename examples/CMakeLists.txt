@@ -7,3 +7,4 @@ endfunction ()
 
 add_example(playground)
 add_example(puzzle_gen)
+add_subdirectory(visualizer)

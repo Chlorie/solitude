@@ -180,7 +180,7 @@ private:
 
     void work()
     {
-        static constexpr std::size_t save_every = 1'000;
+        static constexpr std::size_t save_every = 500;
         std::vector<sltd::Board> puzzles[difficulty_count];
         for (std::size_t count = 0;; count++)
         {
@@ -214,4 +214,4 @@ private:
     }
 };
 
-int main() { PuzzleGenerator("puzzles-20230914", 20'000, 20).run(); }
+int main() { PuzzleGenerator("puzzles", 20'000, 20).run(); }

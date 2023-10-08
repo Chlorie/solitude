@@ -1,5 +1,12 @@
 {
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
     "name": "solitude",
     "version-string": "0.1.0",
-    "dependencies": [ "clu", "fmt" ]
+    "dependencies": [ "clu", "fmt" ],
+    "features": {
+        "build-examples": {
+            "description": "Build example executables",
+            "dependencies": [ "skia", "sdl2" ]
+        }
+    }
 }
