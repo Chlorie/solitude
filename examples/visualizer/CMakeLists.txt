@@ -5,6 +5,8 @@ target_sources(${TGT_NAME} PRIVATE
 	"main.cpp"
 	"elements/board.h"
 	"elements/board.cpp"
+	"elements/sizes.h"
+	"elements/sizes.cpp"
 	"elements/style.h"
 	"elements/style.cpp"
 	"gui/canvas_view.h"

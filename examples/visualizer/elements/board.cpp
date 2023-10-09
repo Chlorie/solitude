@@ -83,25 +83,34 @@ namespace slvs
         const SkPaint paint(style.palette.foreground);
         const SkFont font(style.number_typeface, candidate_number_size);
         const auto bound = bound_all_rects(get_number_bounds(font));
-        const auto inner_offset =
-            SkVector{subdivisions - sltd::box_width, subdivisions - sltd::box_height} * (candidate_region_size / 2);
         for (int i = 0; i < sltd::board_size; i++)
             for (int j = 0; j < sltd::board_size; j++)
             {
                 if (board.filled_at(i, j))
                     continue;
                 const auto candidates = board.at(i, j);
-                const auto cell_offset = SkVector{static_cast<float>(j), static_cast<float>(i)} * cell_size;
                 for (int k = 0; k < sltd::board_size; k++)
                 {
                     if (!(candidates & (1 << k)))
                         continue;
-                    const int kx = k % sltd::box_height, ky = k / sltd::box_width;
-                    const auto candidate_offset =
-                        SkVector{static_cast<float>(kx) + 0.5f, static_cast<float>(ky) + 0.5f} * candidate_region_size;
-                    const auto pos = inner_offset + cell_offset + candidate_offset - bound.center();
+                    const auto pos = get_candidate_position(i, j, k) - bound.center();
                     region->drawString(std::to_string(k + 1).c_str(), pos.x(), pos.y(), font, paint);
                 }
             }
+    }
+
+    void draw_candidate_highlights(
+        const CanvasView& canvas, const std::span<const CandidateHighlight> highlights, const Style& style)
+    {
+        const auto region = get_grid_region(canvas);
+        SkPaint paint;
+        paint.setAntiAlias(true);
+        for (const auto& hl : highlights)
+        {
+            paint.setColor(style.palette.highlight[hl.color]);
+            region->drawCircle(
+                get_candidate_position(hl.cell / sltd::board_size, hl.cell % sltd::board_size, hl.candidate),
+                candidate_circle_radius, paint);
+        }
     }
 } // namespace slvs
