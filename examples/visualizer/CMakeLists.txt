@@ -3,8 +3,15 @@ set(TGT_NAME "solitude-visualizer")
 add_executable(${TGT_NAME})
 target_sources(${TGT_NAME} PRIVATE
 	"main.cpp"
-	"window.h"
-	"window.cpp"
+	"elements/board.h"
+	"elements/board.cpp"
+	"elements/style.h"
+	"elements/style.cpp"
+	"gui/canvas_view.h"
+	"gui/canvas_view.cpp"
+	"gui/color_literals.h"
+	"gui/window.h"
+	"gui/window.cpp"
 )
 target_set_output_dirs(${TGT_NAME})
 target_set_cxx_std(${TGT_NAME})

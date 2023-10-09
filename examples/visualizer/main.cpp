@@ -1,19 +1,62 @@
-#include <skia/core/SkFont.h>
-#include <skia/core/SkPaint.h>
+#include <solitude/generator.h>
 
-#include "window.h"
+#include "gui/window.h"
+#include "gui/canvas_view.h"
+#include "gui/color_literals.h"
+#include "elements/board.h"
 
-class Window final : public slvs::gui::WindowBase
+using namespace slvs::literals;
+
+class Window final : public slvs::WindowBase
 {
 public:
-    Window(): WindowBase("Solitude Visualizer", {1280, 720}) {}
+    Window(): WindowBase("Solitude Visualizer", {960, 540})
+    {
+        style_.palette = slvs::dark_palette();
+        generate_new_puzzle();
+    }
 
 protected:
-    void on_draw(SkCanvas& canvas) override
+    void on_draw(const slvs::CanvasView& canvas) override
     {
-        const SkFont font(nullptr, 12);
-        canvas.drawRect(SkRect::MakeLTRB(0, 0, 1280, 18), SkPaint(SkColor4f{1, 0.5, 0.5, 0.5}));
-        canvas.drawString("The quick brown fox jumps over the lazy dog.", 0, 12, font, SkPaint(SkColor4f{1, 1, 1, 1}));
+        canvas->clear(style_.palette.background);
+        {
+            const float inset = std::min(canvas.size().width(), canvas.size().height()) * 0.1f;
+            auto view = canvas;
+            view.subregion(view.rect().makeInset(inset, inset));
+            slvs::draw_sudoku_grid(view, style_);
+            slvs::draw_filled_numbers(view, board_, board_.filled, style_);
+            slvs::draw_candidates(view, board_, style_);
+        }
+    }
+
+    void on_key_pressed(const SDL_Keysym key) override
+    {
+        if (key.mod != 0)
+            return;
+        switch (key.sym)
+        {
+            case SDLK_t:
+                use_dark_theme_ = !use_dark_theme_;
+                style_.palette = use_dark_theme_ ? slvs::dark_palette() : slvs::light_palette();
+                break;
+            case SDLK_r: generate_new_puzzle(); break;
+            case SDLK_ESCAPE: close(); break;
+            default: break;
+        }
+    }
+
+private:
+    bool use_dark_theme_ = true;
+    slvs::Style style_;
+    sltd::Board board_;
+    sltd::Board solved_board_;
+
+    void generate_new_puzzle()
+    {
+        board_ = sltd::generate_minimal_puzzle(sltd::SymmetryType::centrosymmetric);
+        solved_board_ = board_;
+        solved_board_.brute_force_solve(1);
     }
 };
 

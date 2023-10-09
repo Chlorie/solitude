@@ -10,9 +10,8 @@
 #include <skia/core/SkColorSpace.h>
 #include <skia/gpu/GrDirectContext.h>
 #include <skia/gpu/GrBackendSurface.h>
-#include <skia/gpu/gl/GrGLInterface.h>
 
-namespace slvs::gui
+namespace slvs
 {
     namespace
     {
@@ -82,22 +81,20 @@ namespace slvs::gui
                 handle_events();
                 SkCanvas& canvas = *surface_->getCanvas();
                 canvas.clear(SK_ColorTRANSPARENT);
-                canvas.save();
-                canvas.scale(render_scale_.x(), render_scale_.y());
-                parent_->on_draw(canvas);
-                canvas.restore();
+                parent_->on_draw(CanvasView::from_resize(canvas, SkSize::Make(px_size_), SkSize::Make(size_)));
                 canvas.flush();
                 SDL_GL_SwapWindow(window_.get());
             }
         }
 
+        void close() { quitting_ = true; }
+
     private:
         WindowBase* parent_;
         SkISize size_;
-        SkVector render_scale_;
+        SkISize px_size_;
         std::unique_ptr<SDL_Window, Lambdaified<SDL_DestroyWindow>> window_;
         std::unique_ptr<std::remove_pointer_t<SDL_GLContext>, Lambdaified<SDL_GL_DeleteContext>> gl_ctx_;
-        sk_sp<const GrGLInterface> gl_interface_;
         sk_sp<GrDirectContext> skia_ctx_;
         sk_sp<SkSurface> surface_;
         bool quitting_ = false;
@@ -115,15 +112,11 @@ namespace slvs::gui
             if (SDL_GL_MakeCurrent(window_.get(), gl_ctx_.get()))
                 sdl_hard_error();
             glEnable(GL_FRAMEBUFFER_SRGB);
-            SDL_SetRenderDrawBlendMode(SDL_GetRenderer(window_.get()), SDL_BLENDMODE_BLEND);
         }
 
         void setup_skia_gl_interface()
         {
-            gl_interface_ = GrGLMakeNativeInterface();
-            if (!gl_interface_)
-                hard_error("Failed to create skia GL interface");
-            skia_ctx_ = GrDirectContext::MakeGL(gl_interface_);
+            skia_ctx_ = GrDirectContext::MakeGL();
             if (!skia_ctx_)
                 hard_error("Failed to create skia GL context");
         }
@@ -132,10 +125,7 @@ namespace slvs::gui
         {
             int width, height;
             SDL_GetWindowSizeInPixels(window_.get(), &width, &height);
-            render_scale_ = {
-                static_cast<float>(width) / static_cast<float>(size_.width()),
-                static_cast<float>(height) / static_cast<float>(size_.height()) //
-            };
+            px_size_ = {width, height};
 
             GrGLint buffer;
             glGetIntegerv(GL_FRAMEBUFFER_BINDING, &buffer);
@@ -166,6 +156,7 @@ namespace slvs::gui
                         }
                         break;
                     }
+                    case SDL_KEYDOWN: parent_->on_key_pressed(ev.key.keysym); break;
                     case SDL_QUIT: quitting_ = true; break;
                     default: break;
                 }
@@ -180,4 +171,6 @@ namespace slvs::gui
     WindowBase::~WindowBase() noexcept = default;
 
     void WindowBase::run() { impl_->run(); }
-} // namespace slvs::gui
+
+    void WindowBase::close() { impl_->close(); }
+} // namespace slvs
