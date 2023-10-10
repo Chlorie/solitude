@@ -20,6 +20,7 @@ public:
 protected:
     void on_draw(const slvs::CanvasView& canvas) override
     {
+        using namespace clu::flag_enum_operators;
         canvas->clear(style_.palette.background);
         {
             const float inset = std::min(canvas.size().width(), canvas.size().height()) * 0.1f;
@@ -30,14 +31,16 @@ protected:
             for (int i = 0; i < sltd::cell_count; i++)
                 if (!board_.filled[i])
                 {
-                    candidates.push_back({
-                        .cell = i,
-                        .candidate = std::countr_zero(solved_board_.cells[i]),
-                        .color = slvs::Palette::eliminated //
-                    });
+                    // candidates.push_back({
+                    //     .cell = i,
+                    //     .candidate = std::countr_zero(solved_board_.cells[i]),
+                    //     .colors = slvs::Palette::eliminated | slvs::Palette::colorless | slvs::Palette::alternative |
+                    //         slvs::Palette::chosen | slvs::Palette::special | slvs::Palette::extra //
+                    // });
                     cells.push_back({
                         .cell = i,
-                        .colors = slvs::Palette::eliminated
+                        .colors = slvs::Palette::eliminated | slvs::Palette::colorless | slvs::Palette::alternative |
+                            slvs::Palette::chosen | slvs::Palette::special | slvs::Palette::extra //
                     });
                 }
             slvs::draw_cell_highlights(view, cells, style_);

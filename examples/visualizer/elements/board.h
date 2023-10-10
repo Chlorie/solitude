@@ -12,7 +12,7 @@ namespace slvs
     {
         int cell;
         int candidate;
-        Palette::Highlight color;
+        clu::flags<Palette::Highlight> colors;
     };
 
     struct CellHighlight

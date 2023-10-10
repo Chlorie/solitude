@@ -9,6 +9,7 @@ namespace slvs
     constexpr float candidates_inset = 3;
     constexpr float candidate_region_size = (cell_size - 2 * candidates_inset) / subdivisions;
     constexpr float candidate_circle_radius = candidate_region_size / 2 * 0.95f;
+    constexpr float candidate_multicolor_offset_degrees = -70;
     constexpr float box_divider_width = 4;
     constexpr float cell_divider_width = 2;
     constexpr float grid_size = cell_size * sltd::board_size; ///< Only the main grid region

@@ -23,9 +23,9 @@ namespace slvs
                         0x808080_rgb, // colorless
                         0x903040_rgb, // eliminated
                         0x307840_rgb, // chosen
-                        0xa8c8f0_rgb, // alternative
-                        0xf0a8f0_rgb, // special
-                        0xf0c8a8_rgb, // extra
+                        0x4050a0_rgb, // alternative
+                        0x804090_rgb, // special
+                        0x805828_rgb, // extra
                     },
                 .arrows = 0xe02222_rgb //
             };
@@ -45,14 +45,14 @@ namespace slvs
                         0x808080_rgb, // colorless
                         0xf0a0a8_rgb, // eliminated
                         0x98d890_rgb, // chosen
-                        0xa8c8f0_rgb, // alternative
-                        0xf0a8f0_rgb, // special
-                        0xf0c8a8_rgb, // extra
+                        0xa8b8f0_rgb, // alternative
+                        0xe0a8f0_rgb, // special
+                        0xf0c8a0_rgb, // extra
                     },
                 .arrows = 0xa01818_rgb //
             };
             for (size_t i = 0; i < res.candidate_highlight.size(); i++)
-                res.cell_highlight[i] = blend(res.candidate_highlight[i], res.background, 0.25f);
+                res.cell_highlight[i] = blend(res.candidate_highlight[i], res.background, 0.3f);
             return res;
         }
     } // namespace

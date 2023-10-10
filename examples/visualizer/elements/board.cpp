@@ -1,7 +1,11 @@
 #include "board.h"
-#include "sizes.h"
+
+#include <numbers>
+#include <skia/core/SkPath.h>
+#include <solitude/utils.h>
+
+#include "constants.h"
 #include "../gui/color_literals.h"
-#include "core/SkColorSpace.h"
 
 namespace slvs
 {
@@ -37,6 +41,34 @@ namespace slvs
             for (const auto& rect : rects)
                 res.join(rect);
             return res;
+        }
+
+        SkPath make_sector(
+            const SkPoint center, const float radius, const float from_degrees, const float sweep_degrees)
+        {
+            const auto bounding_rect =
+                SkRect::MakeLTRB(center.x() - radius, center.y() - radius, center.x() + radius, center.y() + radius);
+            return SkPath{}.addArc(bounding_rect, from_degrees, sweep_degrees).lineTo(center).close();
+        }
+
+        void draw_multicolor_circle(const CanvasView& canvas, SkPaint& paint, const SkPoint center, const float radius,
+            const clu::flags<Palette::Highlight> color_flags, const std::span<const SkColor4f> colors)
+        {
+            using ColorDataType = decltype(color_flags)::data_type;
+            const auto bits = static_cast<ColorDataType>(color_flags);
+            const int n_colors = std::popcount(bits);
+            if (bits == 0)
+                return;
+            const float sweep_degrees = 360.f / static_cast<float>(n_colors);
+            for (int idx = -1; const int color : sltd::set_bit_indices(bits))
+            {
+                idx++;
+                paint.setColor(colors[color]);
+                canvas->drawPath(
+                    make_sector(center, radius, //
+                        candidate_multicolor_offset_degrees + static_cast<float>(idx) * sweep_degrees, sweep_degrees),
+                    paint);
+            }
         }
     } // namespace
 
@@ -105,12 +137,9 @@ namespace slvs
         SkPaint paint;
         paint.setAntiAlias(true);
         for (const auto& hl : highlights)
-        {
-            paint.setColor(style.palette.candidate_highlight[hl.color]);
-            region->drawCircle(
+            draw_multicolor_circle(region, paint,
                 get_candidate_position(hl.cell / sltd::board_size, hl.cell % sltd::board_size, hl.candidate),
-                candidate_circle_radius, paint);
-        }
+                candidate_circle_radius, hl.colors, style.palette.candidate_highlight);
     }
 
     void draw_cell_highlights(
@@ -121,10 +150,12 @@ namespace slvs
         paint.setAntiAlias(true);
         for (const auto& hl : highlights)
         {
-            using ColorDataType = decltype(hl.colors)::data_type;
-            // TODO: multiple colors
-            paint.setColor(style.palette.cell_highlight[std::countr_zero(static_cast<ColorDataType>(hl.colors))]);
-            region->drawRect(get_cell_rect(hl.cell / sltd::board_size, hl.cell % sltd::board_size), paint);
+            const auto rect = get_cell_rect(hl.cell / sltd::board_size, hl.cell % sltd::board_size);
+            region->save();
+            region->clipRect(rect);
+            const float radius = rect.width() / std::numbers::sqrt2_v<float>;
+            draw_multicolor_circle(region, paint, rect.center(), radius, hl.colors, style.palette.cell_highlight);
+            region->restore();
         }
     }
 } // namespace slvs
