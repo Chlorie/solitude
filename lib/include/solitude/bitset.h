@@ -292,7 +292,8 @@ namespace sltd
     private:
         static constexpr int element_width = 8 * sizeof(ElementType);
         static constexpr ElementType all_bits_set_mask = ~ElementType{};
-        static constexpr ElementType last_element_mask = all_bits_set_mask >> (element_width - Size % element_width);
+        static constexpr ElementType last_element_mask = all_bits_set_mask >>
+            (element_width - 1 - (Size - 1) % element_width);
 
         ElementType data_[array_size]{};
     };

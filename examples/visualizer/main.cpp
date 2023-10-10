@@ -25,19 +25,23 @@ protected:
             const float inset = std::min(canvas.size().width(), canvas.size().height()) * 0.1f;
             auto view = canvas;
             view.subregion(view.rect().makeInset(inset, inset));
-            std::vector<slvs::CandidateHighlight> highlights;
+            std::vector<slvs::CandidateHighlight> candidates;
+            std::vector<slvs::CellHighlight> cells;
             for (int i = 0; i < sltd::cell_count; i++)
                 if (!board_.filled[i])
-                    for (const auto j : sltd::set_bit_indices(board_.cells[i]))
-                    {
-                        const bool correct = (1 << j) == solved_board_.cells[i];
-                        highlights.push_back({
-                            .cell = i,
-                            .candidate = j,
-                            .color = correct ? slvs::Palette::chosen : slvs::Palette::eliminated //
-                        });
-                    }
-            slvs::draw_candidate_highlights(view, highlights, style_);
+                {
+                    candidates.push_back({
+                        .cell = i,
+                        .candidate = std::countr_zero(solved_board_.cells[i]),
+                        .color = slvs::Palette::eliminated //
+                    });
+                    cells.push_back({
+                        .cell = i,
+                        .colors = slvs::Palette::eliminated
+                    });
+                }
+            slvs::draw_cell_highlights(view, cells, style_);
+            slvs::draw_candidate_highlights(view, candidates, style_);
             slvs::draw_sudoku_grid(view, style_);
             slvs::draw_filled_numbers(view, board_, board_.filled, style_);
             slvs::draw_candidates(view, board_, style_);

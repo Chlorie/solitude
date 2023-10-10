@@ -14,13 +14,16 @@ namespace slvs
             chosen, ///< Chosen candidates
             alternative, ///< Other candidates (fins, other outcome of chains, etc.)
             special, ///< Special candidates (Start of a chain, etc.)
-            extra ///< Extra hint color
+            extra, ///< Extra hint color
+
+            flags_bit_size
         };
 
         SkColor4f background; ///< Background color
         SkColor4f foreground; ///< Grid, all normal text
         SkColor4f non_given_filled_numbers; ///< Numbers filled in (non-givens)
-        SkColor4f highlight[6]; ///< Highlight colors
+        std::array<SkColor4f, flags_bit_size> candidate_highlight; ///< Candidate highlight colors
+        std::array<SkColor4f, flags_bit_size> cell_highlight; ///< Cell highlight colors
         SkColor4f arrows; ///< Arrows for chains
     };
 

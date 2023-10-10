@@ -133,7 +133,7 @@ namespace slvs
             const GrBackendRenderTarget render_target(width, height, 0, 8, //
                 {.fFBOID = static_cast<GrGLuint>(buffer), .fFormat = GL_RGB8});
             surface_ = SkSurface::MakeFromBackendRenderTarget(skia_ctx_.get(), render_target,
-                kBottomLeft_GrSurfaceOrigin, kRGB_888x_SkColorType, SkColorSpace::MakeSRGBLinear(), nullptr);
+                kBottomLeft_GrSurfaceOrigin, kRGB_888x_SkColorType, SkColorSpace::MakeSRGB(), nullptr);
             if (!surface_)
                 hard_error("Failed to create skia surface");
         }

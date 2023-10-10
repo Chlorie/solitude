@@ -16,5 +16,6 @@ namespace slvs
     constexpr float filled_number_size = 40;
     constexpr float candidate_number_size = filled_number_size / subdivisions;
 
+    SkRect get_cell_rect(int row, int column);
     SkVector get_candidate_position(int row, int column, int candidate); ///< Center point of a candidate
 } // namespace slvs

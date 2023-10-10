@@ -1,6 +1,7 @@
 #include "board.h"
 #include "sizes.h"
 #include "../gui/color_literals.h"
+#include "core/SkColorSpace.h"
 
 namespace slvs
 {
@@ -67,9 +68,7 @@ namespace slvs
                 if (!board.filled_at(i, j))
                     continue;
                 const int num = std::countr_zero(board.at(i, j));
-                const auto cell_center =
-                    SkVector{static_cast<float>(j) + 0.5f, static_cast<float>(i) + 0.5f} * cell_size;
-                const auto pos = cell_center - bound.center();
+                const auto pos = get_cell_rect(i, j).center() - bound.center();
                 const bool is_given = givens[i * sltd::board_size + j];
                 font.setEmbolden(is_given);
                 paint.setColor(is_given ? style.palette.foreground : style.palette.non_given_filled_numbers);
@@ -107,10 +106,25 @@ namespace slvs
         paint.setAntiAlias(true);
         for (const auto& hl : highlights)
         {
-            paint.setColor(style.palette.highlight[hl.color]);
+            paint.setColor(style.palette.candidate_highlight[hl.color]);
             region->drawCircle(
                 get_candidate_position(hl.cell / sltd::board_size, hl.cell % sltd::board_size, hl.candidate),
                 candidate_circle_radius, paint);
+        }
+    }
+
+    void draw_cell_highlights(
+        const CanvasView& canvas, const std::span<const CellHighlight> highlights, const Style& style)
+    {
+        const auto region = get_grid_region(canvas);
+        SkPaint paint;
+        paint.setAntiAlias(true);
+        for (const auto& hl : highlights)
+        {
+            using ColorDataType = decltype(hl.colors)::data_type;
+            // TODO: multiple colors
+            paint.setColor(style.palette.cell_highlight[std::countr_zero(static_cast<ColorDataType>(hl.colors))]);
+            region->drawRect(get_cell_rect(hl.cell / sltd::board_size, hl.cell % sltd::board_size), paint);
         }
     }
 } // namespace slvs
