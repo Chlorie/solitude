@@ -31,23 +31,31 @@ protected:
             for (int i = 0; i < sltd::cell_count; i++)
                 if (!board_.filled[i])
                 {
-                    // candidates.push_back({
+                    candidates.push_back({
+                        .cell = i,
+                        .candidate = std::countr_zero(solved_board_.cells[i]),
+                        .colors = slvs::Palette::chosen //
+                    });
+                    // cells.push_back({
                     //     .cell = i,
-                    //     .candidate = std::countr_zero(solved_board_.cells[i]),
-                    //     .colors = slvs::Palette::eliminated | slvs::Palette::colorless | slvs::Palette::alternative |
+                    //     .colors = slvs::Palette::eliminated | slvs::Palette::grey | slvs::Palette::alternative |
                     //         slvs::Palette::chosen | slvs::Palette::special | slvs::Palette::extra //
                     // });
-                    cells.push_back({
-                        .cell = i,
-                        .colors = slvs::Palette::eliminated | slvs::Palette::colorless | slvs::Palette::alternative |
-                            slvs::Palette::chosen | slvs::Palette::special | slvs::Palette::extra //
-                    });
                 }
+            const slvs::Arrow arrows[]{{
+                .from_cell = candidates[0].cell,
+                .to_cell = candidates[2].cell,
+                .from_candidate = candidates[0].candidate,
+                .to_candidate = candidates[2].candidate,
+                .style = slvs::Arrow::Style::dashed,
+                .bend = slvs::Arrow::BendDirection::right //
+            }};
             slvs::draw_cell_highlights(view, cells, style_);
             slvs::draw_candidate_highlights(view, candidates, style_);
             slvs::draw_sudoku_grid(view, style_);
             slvs::draw_filled_numbers(view, board_, board_.filled, style_);
             slvs::draw_candidates(view, board_, style_);
+            slvs::draw_arrows(view, arrows, style_);
         }
     }
 

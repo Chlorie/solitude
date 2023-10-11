@@ -9,7 +9,7 @@ namespace slvs
     {
         enum Highlight
         {
-            colorless, ///< Colorless highlight
+            grey, ///< Colorless highlight (darker on light theme, lighter on dark theme)
             eliminated, ///< Eliminations
             chosen, ///< Chosen candidates
             alternative, ///< Other candidates (fins, other outcome of chains, etc.)

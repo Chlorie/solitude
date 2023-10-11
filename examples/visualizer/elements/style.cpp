@@ -27,7 +27,7 @@ namespace slvs
                         0x804090_rgb, // special
                         0x805828_rgb, // extra
                     },
-                .arrows = 0xe02222_rgb //
+                .arrows = 0xe04848_rgb //
             };
             for (size_t i = 0; i < res.candidate_highlight.size(); i++)
                 res.cell_highlight[i] = blend(res.candidate_highlight[i], res.background, 0.4f);
@@ -49,7 +49,7 @@ namespace slvs
                         0xe0a8f0_rgb, // special
                         0xf0c8a0_rgb, // extra
                     },
-                .arrows = 0xa01818_rgb //
+                .arrows = 0xe02828_rgb //
             };
             for (size_t i = 0; i < res.candidate_highlight.size(); i++)
                 res.cell_highlight[i] = blend(res.candidate_highlight[i], res.background, 0.3f);

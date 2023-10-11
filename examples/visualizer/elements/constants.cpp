@@ -2,14 +2,16 @@
 
 namespace slvs
 {
-    SkRect get_cell_rect(const int row, const int column)
+    SkRect get_cell_rect(const int cell)
     {
+        const int row = cell / sltd::board_size, column = cell % sltd::board_size;
         return SkRect::MakeXYWH(
             static_cast<float>(column) * cell_size, static_cast<float>(row) * cell_size, cell_size, cell_size);
     }
 
-    SkVector get_candidate_position(const int row, const int column, const int candidate)
+    SkVector get_candidate_position(const int cell, const int candidate)
     {
+        const int row = cell / sltd::board_size, column = cell % sltd::board_size;
         const auto inner_offset =
             SkVector{subdivisions - sltd::box_width, subdivisions - sltd::box_height} * (candidate_region_size / 2) +
             SkVector{candidates_inset, candidates_inset};

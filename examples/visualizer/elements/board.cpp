@@ -1,7 +1,10 @@
 #include "board.h"
 
+#include <cmath>
 #include <numbers>
-#include <skia/core/SkPath.h>
+#include <skia/core/SkPathBuilder.h>
+#include <skia/core/SkPathMeasure.h>
+#include <skia/effects/SkDashPathEffect.h>
 #include <solitude/utils.h>
 
 #include "constants.h"
@@ -70,6 +73,64 @@ namespace slvs
                     paint);
             }
         }
+
+        float bend_angle_for_direction(const Arrow::BendDirection bend)
+        {
+            switch (bend)
+            {
+                case Arrow::BendDirection::left: return -arrow_bend_angle;
+                case Arrow::BendDirection::right: return arrow_bend_angle;
+                case Arrow::BendDirection::none:
+                default: return 0.f;
+            }
+        }
+
+        SkVector angle_to_vector(const float angle) noexcept { return {std::cos(angle), std::sin(angle)}; }
+
+        void draw_arrow(const CanvasView& canvas, SkPaint& paint, const Arrow& arrow)
+        {
+            const SkPoint from_center = get_candidate_position(arrow.from_cell, arrow.from_candidate);
+            const SkPoint to_center = get_candidate_position(arrow.to_cell, arrow.to_candidate);
+            const SkVector diff = to_center - from_center;
+            const float direct_angle = std::atan2(diff.y(), diff.x());
+            const float bend_angle = bend_angle_for_direction(arrow.bend);
+            const SkPoint from_direction = angle_to_vector(direct_angle + bend_angle);
+            const SkPoint to_direction = -angle_to_vector(direct_angle - bend_angle);
+            const SkPoint from = from_center + from_direction * candidate_circle_radius;
+            const SkPoint to = to_center + to_direction * candidate_circle_radius;
+            const SkPoint from_ctrl = from + from_direction * arrow_bend_distance;
+            const SkPoint to_ctrl = to + to_direction * arrow_bend_distance;
+
+            // The curve goes backwards, since we need to measure the curve from the end later
+            const auto curve = arrow.bend == Arrow::BendDirection::none
+                ? SkPath().moveTo(to).lineTo(from)
+                : SkPath().moveTo(to).cubicTo(to_ctrl, from_ctrl, from);
+            canvas->save();
+            // Remove the extra part of the curve at the arrow tip
+            canvas->clipPath(SkPathBuilder(SkPathFillType::kInverseWinding)
+                                 .addCircle(to.x(), to.y(), arrow_tip_clip_radius)
+                                 .detach());
+            paint.setStroke(true);
+            if (arrow.style == Arrow::Style::dashed)
+                paint.setPathEffect(SkDashPathEffect::Make(arrow_dash_intervals, 2, 0));
+            canvas->drawPath(curve, paint);
+            canvas->restore();
+
+            paint.setStroke(false);
+            paint.setPathEffect(nullptr);
+            SkPoint arrow_tip_inner;
+            SkPathMeasure(curve, false).getPosTan(arrow_tip_inner_length, &arrow_tip_inner, nullptr);
+            constexpr float tip_half_angle = arrow_tip_angle / 2;
+            const SkVector tip_diff = to - arrow_tip_inner;
+            const float tip_main_angle = std::atan2(tip_diff.y(), tip_diff.x());
+            canvas->drawPath(SkPath()
+                                 .moveTo(to)
+                                 .lineTo(to - angle_to_vector(tip_main_angle - tip_half_angle) * arrow_tip_outer_length)
+                                 .lineTo(to - angle_to_vector(tip_main_angle) * arrow_tip_inner_length)
+                                 .lineTo(to - angle_to_vector(tip_main_angle + tip_half_angle) * arrow_tip_outer_length)
+                                 .close(),
+                paint);
+        }
     } // namespace
 
     void draw_sudoku_grid(const CanvasView& canvas, const Style& style)
@@ -94,18 +155,15 @@ namespace slvs
         SkPaint paint;
         SkFont font(style.number_typeface, filled_number_size);
         const auto bound = bound_all_rects(get_number_bounds(font));
-        for (int i = 0; i < sltd::board_size; i++)
-            for (int j = 0; j < sltd::board_size; j++)
-            {
-                if (!board.filled_at(i, j))
-                    continue;
-                const int num = std::countr_zero(board.at(i, j));
-                const auto pos = get_cell_rect(i, j).center() - bound.center();
-                const bool is_given = givens[i * sltd::board_size + j];
-                font.setEmbolden(is_given);
-                paint.setColor(is_given ? style.palette.foreground : style.palette.non_given_filled_numbers);
-                region->drawString(std::to_string(num + 1).c_str(), pos.x(), pos.y(), font, paint);
-            }
+        for (const int i : board.filled.set_bit_indices())
+        {
+            const int num = std::countr_zero(board.cells[i]);
+            const auto pos = get_cell_rect(i).center() - bound.center();
+            const bool is_given = givens[i];
+            font.setEmbolden(is_given);
+            paint.setColor(is_given ? style.palette.foreground : style.palette.non_given_filled_numbers);
+            region->drawString(std::to_string(num + 1).c_str(), pos.x(), pos.y(), font, paint);
+        }
     }
 
     void draw_candidates(const CanvasView& canvas, const sltd::Board& board, const Style& style)
@@ -114,19 +172,11 @@ namespace slvs
         const SkPaint paint(style.palette.foreground);
         const SkFont font(style.number_typeface, candidate_number_size);
         const auto bound = bound_all_rects(get_number_bounds(font));
-        for (int i = 0; i < sltd::board_size; i++)
-            for (int j = 0; j < sltd::board_size; j++)
+        for (const auto unfilled = ~board.filled; const int i : unfilled.set_bit_indices())
+            for (const int j : sltd::set_bit_indices(board.cells[i]))
             {
-                if (board.filled_at(i, j))
-                    continue;
-                const auto candidates = board.at(i, j);
-                for (int k = 0; k < sltd::board_size; k++)
-                {
-                    if (!(candidates & (1 << k)))
-                        continue;
-                    const auto pos = get_candidate_position(i, j, k) - bound.center();
-                    region->drawString(std::to_string(k + 1).c_str(), pos.x(), pos.y(), font, paint);
-                }
+                const auto pos = get_candidate_position(i, j) - bound.center();
+                region->drawString(std::to_string(j + 1).c_str(), pos.x(), pos.y(), font, paint);
             }
     }
 
@@ -137,8 +187,7 @@ namespace slvs
         SkPaint paint;
         paint.setAntiAlias(true);
         for (const auto& hl : highlights)
-            draw_multicolor_circle(region, paint,
-                get_candidate_position(hl.cell / sltd::board_size, hl.cell % sltd::board_size, hl.candidate),
+            draw_multicolor_circle(region, paint, get_candidate_position(hl.cell, hl.candidate),
                 candidate_circle_radius, hl.colors, style.palette.candidate_highlight);
     }
 
@@ -150,12 +199,22 @@ namespace slvs
         paint.setAntiAlias(true);
         for (const auto& hl : highlights)
         {
-            const auto rect = get_cell_rect(hl.cell / sltd::board_size, hl.cell % sltd::board_size);
+            const auto rect = get_cell_rect(hl.cell);
             region->save();
             region->clipRect(rect);
             const float radius = rect.width() / std::numbers::sqrt2_v<float>;
             draw_multicolor_circle(region, paint, rect.center(), radius, hl.colors, style.palette.cell_highlight);
             region->restore();
         }
+    }
+
+    void draw_arrows(const CanvasView& canvas, const std::span<const Arrow> arrows, const Style& style)
+    {
+        const auto region = get_grid_region(canvas);
+        SkPaint paint(style.palette.arrows);
+        paint.setAntiAlias(true);
+        paint.setStrokeWidth(arrow_width);
+        for (const auto& arrow : arrows)
+            draw_arrow(canvas, paint, arrow);
     }
 } // namespace slvs
